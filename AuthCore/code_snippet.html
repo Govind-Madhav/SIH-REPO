@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Snippet</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #f8f8f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .code-container {
+            background: #2d2d2d;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            width: 800px;
+        }
+
+        .mac-header {
+            background: #3a3a3a;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .close {
+            background: #ff5f56;
+        }
+
+        .minimize {
+            background: #ffbd2e;
+        }
+
+        .maximize {
+            background: #27c93f;
+        }
+
+        .title {
+            color: #888;
+            font-size: 13px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-right: 60px;
+            /* balance out the dots */
+            font-family: monospace;
+        }
+
+        pre {
+            margin: 0;
+            padding: 24px !important;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="code-container">
+        <div class="mac-header">
+            <div class="dot close"></div>
+            <div class="dot minimize"></div>
+            <div class="dot maximize"></div>
+            <div class="title">server.js - Auth Module Initialization</div>
+        </div>
+        <pre><code class="language-javascript">import express from 'express';
+import { Auth } from './auth-engine/index.js';
+import { SqliteAdapter } from './auth-engine/adapters/sqlite.js';
+
+const app = express();
+app.use(express.json());
+
+// Initialize the Universal Auth Engine
+const authSystem = Auth.init({
+    storageAdapter: new SqliteAdapter('auth.db'),
+    claimsResolver: async ({ userId, context }) => ({
+        roles: ['user', 'admin'], 
+        tenant: context.tenant 
+    }),
+    jwtSecret: process.env.JWT_SECRET,
+    accessExpiry: '15m',
+    refreshExpiryMs: 7 * 24 * 60 * 60 * 1000
+});
+
+// Mount the decoupled auth routes
+app.use('/auth', authSystem.router);
+
+// Protect your product routes easily
+app.get('/api/protected', authSystem.authenticate, (req, res) => {
+    res.json({ message: 'Success!', user: req.identity });
+});
+
+app.listen(3000, () => console.log('API is live!'));
+</code></pre>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+</body>
+
+</html>
