@@ -36,37 +36,37 @@ export const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-100">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-900 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-3">
-          <div className="w-12 h-12 rounded-xl bg-amber-950/80 border border-amber-800 flex items-center justify-center text-amber-400 shadow-lg">
+          <div className="w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-md">
             <KeyRound className="w-6 h-6" />
           </div>
         </div>
-        <h2 className="text-center text-2xl font-bold tracking-tight text-slate-100">
+        <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900">
           RECOVER OPERATIONAL ACCESS
         </h2>
-        <p className="mt-1 text-center text-xs text-slate-400">
+        <p className="mt-1 text-center text-xs text-slate-500">
           Enter your registered Email or Phone number to issue a reset token
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-slate-900 py-8 px-4 shadow-2xl border border-slate-800 sm:rounded-xl sm:px-10">
+        <div className="bg-white py-8 px-4 shadow-md border border-slate-200 sm:rounded-xl sm:px-10">
           {error && (
-            <div className="mb-5 bg-rose-950/70 border border-rose-800 p-3 rounded-lg flex items-start space-x-2.5 text-rose-200 text-xs">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="mb-5 bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-start space-x-2.5 text-rose-700 text-xs">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="mb-5 bg-emerald-950/70 border border-emerald-800 p-3.5 rounded-lg text-xs space-y-3">
-              <div className="flex items-start space-x-2 text-emerald-200">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="mb-5 bg-emerald-50 border border-emerald-200 p-3.5 rounded-lg text-xs space-y-3">
+              <div className="flex items-start space-x-2 text-emerald-800">
+                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>{success}</span>
               </div>
-              <div className="pt-2 border-t border-emerald-900 flex justify-end">
+              <div className="pt-2 border-t border-emerald-200 flex justify-end">
                 <button
                   onClick={() => navigate('/reset-password')}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-semibold text-xs"
@@ -80,7 +80,7 @@ export const ForgotPasswordPage: React.FC = () => {
           {!success && (
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Email Address or Registered Phone
                 </label>
                 <div className="relative rounded-md shadow-sm">
@@ -93,7 +93,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     placeholder="user@ner.logistics.gov.in"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -110,10 +110,10 @@ export const ForgotPasswordPage: React.FC = () => {
             </form>
           )}
 
-          <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+          <div className="mt-6 pt-4 border-t border-slate-200 text-center">
             <Link
               to="/login"
-              className="inline-flex items-center space-x-1.5 text-xs text-slate-400 hover:text-slate-200 transition"
+              className="inline-flex items-center space-x-1.5 text-xs text-slate-600 hover:text-slate-900 transition font-medium"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Login</span>

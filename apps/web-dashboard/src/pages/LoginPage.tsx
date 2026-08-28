@@ -74,26 +74,26 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-100">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 text-slate-900 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo & Header */}
         <div className="flex justify-center mb-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center text-white shadow-lg shadow-emerald-950 border border-emerald-500/20">
-            <Truck className="w-7 h-7 text-emerald-100" />
+          <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 border border-emerald-500">
+            <Truck className="w-7 h-7 text-white" />
           </div>
         </div>
-        <h2 className="text-center text-2xl font-bold tracking-tight text-slate-100">
+        <h2 className="text-center text-2xl font-extrabold tracking-tight text-slate-900">
           NER LOGISTICS PLATFORM
         </h2>
-        <p className="mt-1 text-center text-xs text-slate-400">
+        <p className="mt-1 text-center text-xs text-slate-500">
           Smart Logistics & Accessibility Intelligence for North Eastern Region of India
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-slate-900 py-8 px-4 shadow-2xl border border-slate-800 sm:rounded-xl sm:px-10">
+        <div className="bg-white py-8 px-4 shadow-md border border-slate-200 sm:rounded-xl sm:px-10">
           {/* Input Type Selector */}
-          <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 mb-6">
+          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 mb-6">
             <button
               type="button"
               onClick={() => {
@@ -102,8 +102,8 @@ export const LoginPage: React.FC = () => {
               }}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition flex items-center justify-center space-x-1.5 ${
                 inputMode === 'email'
-                  ? 'bg-emerald-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Mail className="w-3.5 h-3.5" />
@@ -117,8 +117,8 @@ export const LoginPage: React.FC = () => {
               }}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition flex items-center justify-center space-x-1.5 ${
                 inputMode === 'phone'
-                  ? 'bg-emerald-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Phone className="w-3.5 h-3.5" />
@@ -128,8 +128,8 @@ export const LoginPage: React.FC = () => {
 
           {/* Error Banner */}
           {error && (
-            <div className="mb-5 bg-rose-950/70 border border-rose-800 p-3 rounded-lg flex items-start space-x-2.5 text-rose-200 text-xs">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="mb-5 bg-rose-50 border border-rose-200 p-3 rounded-lg flex items-start space-x-2.5 text-rose-700 text-xs">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
@@ -137,7 +137,7 @@ export const LoginPage: React.FC = () => {
           <form className="space-y-5" onSubmit={handleSubmit}>
             {/* Email / Phone Field */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
                 {inputMode === 'email' ? 'Email Address' : 'Phone Number'}
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -152,7 +152,7 @@ export const LoginPage: React.FC = () => {
                   }
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -160,10 +160,10 @@ export const LoginPage: React.FC = () => {
             {/* Password Field */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-medium text-slate-300">Password</label>
+                <label className="block text-xs font-medium text-slate-700">Password</label>
                 <Link
                   to="/forgot-password"
-                  className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition"
+                  className="text-xs font-medium text-emerald-700 hover:text-emerald-800 transition"
                 >
                   Forgot Password?
                 </Link>
@@ -178,12 +178,12 @@ export const LoginPage: React.FC = () => {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-9 pr-10 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  className="block w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -198,9 +198,9 @@ export const LoginPage: React.FC = () => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded bg-slate-950 border-slate-800 text-emerald-600 focus:ring-emerald-500"
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-300">
+                <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-700">
                   Remember operational session
                 </label>
               </div>
@@ -211,7 +211,7 @@ export const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {isLoading ? (
                   <div className="flex items-center space-x-2">
@@ -226,12 +226,12 @@ export const LoginPage: React.FC = () => {
           </form>
 
           {/* Registration Link */}
-          <div className="mt-6 pt-5 border-t border-slate-800 text-center">
-            <p className="text-xs text-slate-400">
+          <div className="mt-6 pt-5 border-t border-slate-200 text-center">
+            <p className="text-xs text-slate-600">
               Need platform authorization?{' '}
               <Link
                 to="/register"
-                className="font-medium text-emerald-400 hover:text-emerald-300 transition"
+                className="font-medium text-emerald-700 hover:text-emerald-800 transition"
               >
                 Register Operational User
               </Link>
@@ -240,12 +240,12 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Operational Banner */}
-        <div className="mt-6 bg-slate-900/50 border border-slate-800/80 rounded-lg p-3 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="mt-6 bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between text-[11px] text-slate-600 shadow-xs">
           <div className="flex items-center space-x-2">
-            <Shield className="w-4 h-4 text-emerald-400" />
+            <Shield className="w-4 h-4 text-emerald-600" />
             <span>Encrypted Session • Role Security Active</span>
           </div>
-          <span className="text-slate-500">v1.0.0</span>
+          <span className="text-slate-400">v1.0.0</span>
         </div>
       </div>
     </div>
