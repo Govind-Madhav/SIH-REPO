@@ -96,4 +96,34 @@ public class RiskEngineService {
                 .factors(factors)
                 .build();
     }
+
+    public RiskPredictiveTimelineDto getPredictiveTimeline() {
+        List<Incident> activeIncidents = incidentRepository.findByStatus("ACTIVE");
+        boolean hasCritical = !activeIncidents.isEmpty();
+
+        String currentStatus = hasCritical ? "HIGH_RISK" : "LOW_RISK";
+        String predictedStatus = hasCritical ? "CRITICAL_RISK_EXPECTED" : "MEDIUM_RISK_EXPECTED";
+        double probability = hasCritical ? 88.5 : 35.0;
+
+        List<String> predictiveFactors = List.of(
+                "Rainfall intensity trend increasing (+45mm/h expected)",
+                "Soil moisture saturation rate exceeding 82% threshold",
+                "High historical landslide frequency corridor (Haflong Sector)"
+        );
+
+        List<RiskTimelinePointDto> timeline = List.of(
+                RiskTimelinePointDto.builder().timeLabel("10:00 AM").riskLevel("LOW").riskScore(24).primaryReason("Normal weather conditions").build(),
+                RiskTimelinePointDto.builder().timeLabel("11:00 AM").riskLevel("MEDIUM").riskScore(41).primaryReason("Rainfall started in mountain pass").build(),
+                RiskTimelinePointDto.builder().timeLabel("12:00 PM").riskLevel("HIGH").riskScore(63).primaryReason("Rainfall exceeded 80mm/24h").build(),
+                RiskTimelinePointDto.builder().timeLabel("01:00 PM").riskLevel("CRITICAL").riskScore(78).primaryReason("Haflong Pass landslide reported").build()
+        );
+
+        return RiskPredictiveTimelineDto.builder()
+                .currentRiskStatus(currentStatus)
+                .predictedNext2HoursRiskStatus(predictedStatus)
+                .probabilityPct(probability)
+                .predictiveFactors(predictiveFactors)
+                .timelineHistory(timeline)
+                .build();
+    }
 }

@@ -1,5 +1,7 @@
 package com.ner.logistics.config;
 
+import com.ner.logistics.accessibility.Corridor;
+import com.ner.logistics.accessibility.CorridorRepository;
 import com.ner.logistics.accessibility.District;
 import com.ner.logistics.accessibility.DistrictRepository;
 import com.ner.logistics.shipment.Shipment;
@@ -24,6 +26,7 @@ public class DataInitializer implements CommandLineRunner {
     private final VehicleRepository vehicleRepository;
     private final DistrictRepository districtRepository;
     private final ShipmentRepository shipmentRepository;
+    private final CorridorRepository corridorRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -102,6 +105,16 @@ public class DataInitializer implements CommandLineRunner {
                     Shipment.builder().vehicleCode("NER-04").commodityType("FUEL").priority("HIGH").origin("Numaligarh Refinery").destination("Haflong Power Substation").status("IN_TRANSIT").build()
             );
             shipmentRepository.saveAll(initialShipments);
+        }
+
+        // 5. Seed Dynamic Logistics Corridors
+        if (corridorRepository.count() == 0) {
+            List<Corridor> initialCorridors = List.of(
+                    Corridor.builder().name("NH-27 Guwahati -> Silchar Corridor").code("COR-NH27").startPoint("Guwahati").endPoint("Silchar").lengthKm(340.0).accessibilityScorePct(42.0).status("HIGH_RISK").build(),
+                    Corridor.builder().name("Haflong Mountain Bypass Corridor").code("COR-HAFLONG-BYPASS").startPoint("Umrangso").endPoint("Jatinga").lengthKm(132.0).accessibilityScorePct(88.0).status("ACCESSIBLE").build(),
+                    Corridor.builder().name("Shillong -> Silchar National Highway").code("COR-NH44").startPoint("Shillong").endPoint("Silchar").lengthKm(215.0).accessibilityScorePct(74.0).status("DEGRADED").build()
+            );
+            corridorRepository.saveAll(initialCorridors);
         }
     }
 }

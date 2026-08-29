@@ -29,4 +29,9 @@ public class RiskController {
                 .build();
         return ResponseEntity.ok(riskEngineService.evaluateRisk(dto));
     }
+
+    @GetMapping("/predictive-timeline")
+    public ResponseEntity<RiskPredictiveTimelineDto> getPredictiveTimeline() {
+        return ResponseEntity.ok(riskEngineService.getPredictiveTimeline());
+    }
 }
