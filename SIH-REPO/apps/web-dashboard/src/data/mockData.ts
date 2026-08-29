@@ -1,0 +1,347 @@
+import { Vehicle } from '../types/vehicle';
+import { Incident } from '../types/incident';
+import { EssentialSupplySummary } from '../types/shipment';
+import { DistrictStatus } from '../types/district';
+
+// Coordinates for NER Geography
+export const NER_CENTER: [number, number] = [26.1445, 91.7362]; // Guwahati center
+
+export const MOCK_VEHICLES: Vehicle[] = [
+  {
+    id: 'v-01',
+    code: 'NER-01',
+    driverName: 'Ramesh Kalita',
+    driverPhone: '+91 98640 12345',
+    cargo: 'Essential Anti-Snake Venom & Vaccines',
+    cargoCategory: 'MEDICINE',
+    status: 'ON_TRACK',
+    riskLevel: 'LOW',
+    connectivity: 'ONLINE',
+    origin: 'Guwahati (Kamrup Metro)',
+    destination: 'Tezpur (Sonitpur)',
+    eta: '2h 15m',
+    location: {
+      lat: 26.3500,
+      lng: 92.2000,
+      address: 'NH-27 Near Nagaon Expressway',
+      speedKmH: 54,
+      lastUpdated: 'Just now',
+    },
+    currentRouteId: 'route-guwahati-tezpur',
+  },
+  {
+    id: 'v-07',
+    code: 'NER-07',
+    driverName: 'Bikash Gogoi',
+    driverPhone: '+91 94350 98765',
+    cargo: 'Emergency Life-Saving Medicines & Insulated Plasma',
+    cargoCategory: 'MEDICINE',
+    status: 'DELAYED',
+    riskLevel: 'HIGH',
+    connectivity: 'ONLINE',
+    origin: 'Guwahati (Kamrup Metro)',
+    destination: 'Silchar (Cachar)',
+    eta: '4h 20m',
+    location: {
+      lat: 25.4000,
+      lng: 92.7500,
+      address: 'Haflong Corridor, Dima Hasao Sector',
+      speedKmH: 22,
+      lastUpdated: '1 min ago',
+    },
+    currentRouteId: 'route-guwahati-silchar-primary',
+    alternativeRouteAvailable: true,
+  },
+  {
+    id: 'v-12',
+    code: 'NER-12',
+    driverName: 'Lalthan Mawia',
+    driverPhone: '+91 98625 44321',
+    cargo: 'Fresh Organic Produce & Grains',
+    cargoCategory: 'AGRICULTURE',
+    status: 'AT_RISK',
+    riskLevel: 'CRITICAL',
+    connectivity: 'DEGRADED',
+    origin: 'Aizawl (Mizoram)',
+    destination: 'Silchar (Cachar)',
+    eta: '6h 45m',
+    location: {
+      lat: 24.2000,
+      lng: 92.7000,
+      address: 'Vairengte Hill Road Cut',
+      speedKmH: 14,
+      lastUpdated: '3 mins ago',
+    },
+    currentRouteId: 'route-aizawl-silchar',
+  },
+  {
+    id: 'v-18',
+    code: 'NER-18',
+    driverName: 'Tashi Lepcha',
+    driverPhone: '+91 97330 88765',
+    cargo: 'Bailey Bridge Prefabricated Steel Girders',
+    cargoCategory: 'CONSTRUCTION',
+    status: 'ON_TRACK',
+    riskLevel: 'LOW',
+    connectivity: 'ONLINE',
+    origin: 'Siliguri Depot',
+    destination: 'Gangtok (Sikkim)',
+    eta: '3h 10m',
+    location: {
+      lat: 27.1000,
+      lng: 88.5000,
+      address: 'Rangpo Checkpost Highway',
+      speedKmH: 42,
+      lastUpdated: 'Just now',
+    },
+    currentRouteId: 'route-siliguri-gangtok',
+  },
+  {
+    id: 'v-21',
+    code: 'NER-21',
+    driverName: 'Imtiyaz Ao',
+    driverPhone: '+91 94360 11223',
+    cargo: 'Fortified Rice & Infant Nutrition Packets',
+    cargoCategory: 'FOOD',
+    status: 'OFFLINE',
+    riskLevel: 'HIGH',
+    connectivity: 'OFFLINE',
+    origin: 'Dimapur (Nagaland)',
+    destination: 'Kohima (Nagaland)',
+    eta: '5h 30m',
+    location: {
+      lat: 25.7500,
+      lng: 93.9000,
+      address: 'Phedema Gap (Low Network Zone)',
+      speedKmH: 0,
+      lastUpdated: '24 mins ago',
+    },
+    currentRouteId: 'route-dimapur-kohima',
+  },
+];
+
+export const MOCK_INCIDENTS: Incident[] = [
+  {
+    id: 'inc-101',
+    type: 'LANDSLIDE',
+    title: 'Major Mudslide Blockage on Haflong Pass',
+    severity: 'CRITICAL',
+    status: 'ACTIVE',
+    location: {
+      lat: 25.2200,
+      lng: 92.9500,
+      name: 'Haflong - Jatinga Stretch',
+      district: 'Dima Hasao',
+    },
+    affectedRoute: 'NH-27 / Guwahati → Silchar Corridor',
+    reportedTime: '12 mins ago',
+    source: 'Field Officer Report',
+    description: 'Heavy rainfall triggered rockfall and earth slip. Freight transit blocked in both directions. Border Roads Organisation (BRO) clearing team dispatched.',
+  },
+  {
+    id: 'inc-102',
+    type: 'FLOOD',
+    title: 'Submerged Highway Roadbed (Flash Inundation)',
+    severity: 'HIGH',
+    status: 'ACTIVE',
+    location: {
+      lat: 24.8200,
+      lng: 92.8000,
+      name: 'Bararak River Spillway',
+      district: 'Cachar (Silchar)',
+    },
+    affectedRoute: 'Badarpur Junction Corridor',
+    reportedTime: '45 mins ago',
+    source: 'Weather API Sensor',
+    description: 'Water depth reached 0.8 meters over highway pavement. Light vehicles suspended, heavy freight proceeding with caution under escort.',
+  },
+  {
+    id: 'inc-103',
+    type: 'ROAD_DAMAGE',
+    title: 'Subsidence and Asphalt Cracking',
+    severity: 'MEDIUM',
+    status: 'INVESTIGATING',
+    location: {
+      lat: 25.6800,
+      lng: 94.1000,
+      name: 'Kohima Bypass Hill Slope',
+      district: 'Kohima',
+    },
+    affectedRoute: 'NH-29 Dimapur-Kohima Corridor',
+    reportedTime: '2 hours ago',
+    source: 'Citizen Report',
+    description: 'Single-lane traffic restriction imposed due to deep cracks in downhill pavement edge.',
+  },
+  {
+    id: 'inc-104',
+    type: 'BRIDGE_ISSUE',
+    title: 'Culvert Structural Distress Verification',
+    severity: 'MEDIUM',
+    status: 'CLEARING',
+    location: {
+      lat: 24.8000,
+      lng: 93.9300,
+      name: 'Imphal River Tributary Crossing',
+      district: 'Imphal East',
+    },
+    affectedRoute: 'NH-37 Jiribam-Imphal Highway',
+    reportedTime: '4 hours ago',
+    source: 'Drone Inspection',
+    description: 'Structural inspection ongoing. Axle weight limit enforced to 15 Metric Tons max.',
+  },
+];
+
+export const MOCK_DISTRICTS: DistrictStatus[] = [
+  {
+    id: 'dst-01',
+    name: 'Guwahati (Kamrup Metro)',
+    state: 'Assam',
+    accessibilityPercentage: 96,
+    status: 'ACCESSIBLE',
+    activeIncidentsCount: 0,
+    vehiclesOperatingCount: 14,
+    riskLevel: 'LOW',
+    center: [26.1445, 91.7362],
+  },
+  {
+    id: 'dst-02',
+    name: 'Dima Hasao (Haflong)',
+    state: 'Assam',
+    accessibilityPercentage: 35,
+    status: 'INACCESSIBLE',
+    activeIncidentsCount: 3,
+    vehiclesOperatingCount: 4,
+    riskLevel: 'CRITICAL',
+    weatherAlert: 'Torrential Rainfall (145mm/24h)',
+    center: [25.1700, 92.9300],
+  },
+  {
+    id: 'dst-03',
+    name: 'Silchar (Cachar)',
+    state: 'Assam',
+    accessibilityPercentage: 62,
+    status: 'PARTIAL_ACCESS',
+    activeIncidentsCount: 2,
+    vehiclesOperatingCount: 9,
+    riskLevel: 'HIGH',
+    weatherAlert: 'Flash Flood Alert Active',
+    center: [24.8333, 92.7789],
+  },
+  {
+    id: 'dst-04',
+    name: 'Shillong (East Khasi Hills)',
+    state: 'Meghalaya',
+    accessibilityPercentage: 88,
+    status: 'ACCESSIBLE',
+    activeIncidentsCount: 1,
+    vehiclesOperatingCount: 11,
+    riskLevel: 'MEDIUM',
+    center: [25.5788, 91.8933],
+  },
+  {
+    id: 'dst-05',
+    name: 'Kohima',
+    state: 'Nagaland',
+    accessibilityPercentage: 74,
+    status: 'PARTIAL_ACCESS',
+    activeIncidentsCount: 1,
+    vehiclesOperatingCount: 6,
+    riskLevel: 'MEDIUM',
+    center: [25.6751, 94.1086],
+  },
+  {
+    id: 'dst-06',
+    name: 'Imphal West',
+    state: 'Manipur',
+    accessibilityPercentage: 82,
+    status: 'ACCESSIBLE',
+    activeIncidentsCount: 1,
+    vehiclesOperatingCount: 8,
+    riskLevel: 'LOW',
+    center: [24.8170, 93.9368],
+  },
+  {
+    id: 'dst-07',
+    name: 'Aizawl',
+    state: 'Mizoram',
+    accessibilityPercentage: 58,
+    status: 'PARTIAL_ACCESS',
+    activeIncidentsCount: 2,
+    vehiclesOperatingCount: 5,
+    riskLevel: 'HIGH',
+    center: [23.7271, 92.7176],
+  },
+  {
+    id: 'dst-08',
+    name: 'Itanagar (Papum Pare)',
+    state: 'Arunachal Pradesh',
+    accessibilityPercentage: 90,
+    status: 'ACCESSIBLE',
+    activeIncidentsCount: 0,
+    vehiclesOperatingCount: 7,
+    riskLevel: 'LOW',
+    center: [27.0844, 93.6053],
+  },
+];
+
+export const MOCK_ESSENTIAL_SUPPLIES: EssentialSupplySummary[] = [
+  {
+    category: 'MEDICINE',
+    name: 'Medical Supplies & Plasma',
+    inTransit: 12,
+    delayed: 2,
+    atRisk: 1,
+    delivered: 48,
+    criticalItem: 'NER-07 (Insulated Vaccines)',
+  },
+  {
+    category: 'FOOD',
+    name: 'Grains & Essential Rations',
+    inTransit: 18,
+    delayed: 1,
+    atRisk: 1,
+    delivered: 92,
+    criticalItem: 'NER-21 (Infant Nutrition)',
+  },
+  {
+    category: 'AGRICULTURE',
+    name: 'Seeds, Fertilizers & Crops',
+    inTransit: 15,
+    delayed: 3,
+    atRisk: 1,
+    delivered: 64,
+    criticalItem: 'NER-12 (Perishable Crops)',
+  },
+  {
+    category: 'CONSTRUCTION',
+    name: 'Disaster Recovery Equipment',
+    inTransit: 8,
+    delayed: 0,
+    atRisk: 0,
+    delivered: 29,
+    criticalItem: 'NER-18 (Bailey Girders)',
+  },
+];
+
+// GIS Route Coordinates for Demo Simulation
+// Primary Route: Guwahati -> Shillong -> Jowai -> Haflong (Landslide Spot) -> Silchar
+export const DEMO_PRIMARY_ROUTE_COORDS: [number, number][] = [
+  [26.1445, 91.7362], // Guwahati
+  [25.8000, 91.8000],
+  [25.5788, 91.8933], // Shillong
+  [25.4500, 92.2000], // Jowai
+  [25.3000, 92.5000],
+  [25.2200, 92.9500], // Haflong / Landslide location
+  [24.9500, 92.8500],
+  [24.8333, 92.7789], // Silchar
+];
+
+// Alternative Rerouted Corridor: Guwahati -> Nagaon -> Lumding -> Maibabang Bypass -> Silchar
+export const DEMO_ALTERNATIVE_ROUTE_COORDS: [number, number][] = [
+  [26.1445, 91.7362], // Guwahati
+  [26.3500, 92.2000], // Nagaon Expressway
+  [25.7500, 93.1600], // Lumding bypass
+  [25.3200, 93.1000], // Maibabang Northern Pass
+  [25.0000, 93.0000],
+  [24.8333, 92.7789], // Silchar
+];
