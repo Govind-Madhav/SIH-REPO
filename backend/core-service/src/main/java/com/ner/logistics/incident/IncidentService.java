@@ -47,7 +47,10 @@ public class IncidentService {
         return savedIncident;
     }
 
-    public List<Incident> getActiveIncidents() {
+    public List<Incident> getActiveIncidents(String severity) {
+        if (severity != null && !severity.isBlank()) {
+            return incidentRepository.findBySeverityAndStatus(severity.toUpperCase(), "ACTIVE");
+        }
         return incidentRepository.findByStatus("ACTIVE");
     }
 

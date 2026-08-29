@@ -23,8 +23,8 @@ public class IncidentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Incident>> getActiveIncidents() {
-        return ResponseEntity.ok(incidentService.getActiveIncidents());
+    public ResponseEntity<List<Incident>> getActiveIncidents(@RequestParam(required = false) String severity) {
+        return ResponseEntity.ok(incidentService.getActiveIncidents(severity));
     }
 
     @GetMapping("/nearby")
