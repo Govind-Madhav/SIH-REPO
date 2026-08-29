@@ -17,6 +17,7 @@ public class RiskEvaluationResponse {
 
     private String currentRiskLevel; // LOW, MEDIUM, HIGH, CRITICAL
 
+    @Builder.Default
     private String assessmentType = "RULE_BASED_REAL_TIME";
 
     private List<FactorImpactDto> factors;
