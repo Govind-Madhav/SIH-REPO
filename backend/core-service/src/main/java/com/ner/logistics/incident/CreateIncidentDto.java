@@ -16,10 +16,10 @@ import java.util.List;
 public class CreateIncidentDto {
 
     @NotBlank
-    private String type; // LANDSLIDE, FLOOD, ROAD_BLOCKED, ROAD_DAMAGE, etc.
+    private String type; // LANDSLIDE, FLOOD, ROAD_BLOCKED, ROAD_DAMAGE, BRIDGE_DAMAGE, etc.
 
     @NotBlank
-    private String severity; // LOW, MEDIUM, HIGH, CRITICAL
+    private String reportedSeverity; // LOW, MEDIUM, HIGH, CRITICAL
 
     private String description;
 
@@ -28,6 +28,8 @@ public class CreateIncidentDto {
 
     @NotNull
     private Double longitude;
+
+    private Double rainfallMm24h;
 
     private List<String> photoUrls;
 }

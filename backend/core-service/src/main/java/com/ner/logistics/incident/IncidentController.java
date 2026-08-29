@@ -27,6 +27,11 @@ public class IncidentController {
         return ResponseEntity.ok(incidentService.getActiveIncidents(severity));
     }
 
+    @GetMapping("/{id}/impact")
+    public ResponseEntity<IncidentImpactSummaryDto> getIncidentImpact(@PathVariable Long id) {
+        return ResponseEntity.ok(incidentService.analyzeImpact(id));
+    }
+
     @GetMapping("/nearby")
     public ResponseEntity<List<Incident>> getNearbyIncidents(
             @RequestParam double lat,
@@ -35,8 +40,8 @@ public class IncidentController {
         return ResponseEntity.ok(incidentService.getNearbyIncidents(lat, lng, distanceMeters));
     }
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Incident> updateStatus(@PathVariable Long id, @RequestParam String status) {
-        return ResponseEntity.ok(incidentService.updateIncidentStatus(id, status));
+    @PutMapping("/{id}/lifecycle")
+    public ResponseEntity<Incident> updateLifecycle(@PathVariable Long id, @RequestParam String verificationStatus) {
+        return ResponseEntity.ok(incidentService.updateLifecycleStatus(id, verificationStatus));
     }
 }

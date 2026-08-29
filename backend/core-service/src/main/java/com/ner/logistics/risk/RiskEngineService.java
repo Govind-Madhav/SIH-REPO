@@ -41,7 +41,12 @@ public class RiskEngineService {
         // 2. PostGIS Spatial Incident Proximity Search (10km radius)
         List<Incident> nearbyIncidents = incidentRepository.findIncidentsNearLocation(request.getLatitude(), request.getLongitude(), 10000.0);
         if (!nearbyIncidents.isEmpty()) {
-            boolean hasCritical = nearbyIncidents.stream().anyMatch(i -> "CRITICAL".equalsIgnoreCase(i.getSeverity()) || "HIGH".equalsIgnoreCase(i.getSeverity()));
+            boolean hasCritical = nearbyIncidents.stream().anyMatch(i -> 
+                "CRITICAL".equalsIgnoreCase(i.getReportedSeverity()) || 
+                "HIGH".equalsIgnoreCase(i.getReportedSeverity()) ||
+                "CRITICAL".equalsIgnoreCase(i.getRecommendedSeverity()) ||
+                "HIGH".equalsIgnoreCase(i.getRecommendedSeverity())
+            );
             if (hasCritical) {
                 score += 45;
                 roadConditionPct = 90.0;

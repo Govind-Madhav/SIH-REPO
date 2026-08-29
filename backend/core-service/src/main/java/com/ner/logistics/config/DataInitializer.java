@@ -2,6 +2,8 @@ package com.ner.logistics.config;
 
 import com.ner.logistics.accessibility.District;
 import com.ner.logistics.accessibility.DistrictRepository;
+import com.ner.logistics.shipment.Shipment;
+import com.ner.logistics.shipment.ShipmentRepository;
 import com.ner.logistics.user.User;
 import com.ner.logistics.user.UserRepository;
 import com.ner.logistics.user.UserRole;
@@ -21,6 +23,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final VehicleRepository vehicleRepository;
     private final DistrictRepository districtRepository;
+    private final ShipmentRepository shipmentRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -88,6 +91,17 @@ public class DataInitializer implements CommandLineRunner {
                     District.builder().name("East Khasi Hills").code("EKH").accessibilityPct(76.0).build()
             );
             districtRepository.saveAll(initialDistricts);
+        }
+
+        // 4. Seed Essential Logistics Shipments
+        if (shipmentRepository.count() == 0) {
+            List<Shipment> initialShipments = List.of(
+                    Shipment.builder().vehicleCode("NER-07").commodityType("MEDICINE").priority("CRITICAL").origin("Guwahati Central Store").destination("Silchar Civil Hospital").status("IN_TRANSIT").build(),
+                    Shipment.builder().vehicleCode("NER-01").commodityType("OXYGEN_CYLINDERS").priority("CRITICAL").origin("Guwahati Industrial Oxygen").destination("Haflong Sub-Divisional Hospital").status("IN_TRANSIT").build(),
+                    Shipment.builder().vehicleCode("NER-02").commodityType("BABY_FOOD").priority("HIGH").origin("Shillong Warehouse").destination("Silchar Relief Camp").status("IN_TRANSIT").build(),
+                    Shipment.builder().vehicleCode("NER-04").commodityType("FUEL").priority("HIGH").origin("Numaligarh Refinery").destination("Haflong Power Substation").status("IN_TRANSIT").build()
+            );
+            shipmentRepository.saveAll(initialShipments);
         }
     }
 }
