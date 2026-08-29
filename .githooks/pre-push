@@ -1,0 +1,29 @@
+#!/bin/sh
+# Pre-push hook: Restricts direct push to main except for the repo owner (Govind Madhav)
+
+protected_branch="main"
+allowed_email="govindmadhav003@gmail.com"
+
+current_email=$(git config user.email)
+
+while read local_ref local_sha remote_ref remote_sha
+do
+    if [ "$remote_ref" = "refs/heads/$protected_branch" ]; then
+        # Allow repo owner or explicit env flag override
+        if [ "$current_email" = "$allowed_email" ] || [ "$ALLOW_MAIN_PUSH" = "true" ]; then
+            echo "✅ Direct push to '$protected_branch' authorized for owner ($current_email)."
+            exit 0
+        fi
+
+        echo ""
+        echo "====================================================================="
+        echo " ❌ DIRECT PUSH REJECTED"
+        echo " Direct pushes to '$protected_branch' are restricted for contributors."
+        echo " Please push your changes to a feature branch and create a Pull Request."
+        echo "====================================================================="
+        echo ""
+        exit 1
+    fi
+done
+
+exit 0
