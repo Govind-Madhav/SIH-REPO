@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+networkx
+python-multipart
+joblib
+scikit-learn
+pandas
+numpy
+requests
+twilio
+python-dotenv
+websockets

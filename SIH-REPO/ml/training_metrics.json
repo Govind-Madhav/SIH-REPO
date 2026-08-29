@@ -1,0 +1,50 @@
+{
+  "regressor_mae": 5.0332549764963455,
+  "regressor_r2": 0.8505718681838518,
+  "classifier_roc_auc": 0.9433408516535775,
+  "classifier_report": {
+    "0": {
+      "precision": 0.9716216216216216,
+      "recall": 0.9573901464713716,
+      "f1-score": 0.9644533869885983,
+      "support": 751.0
+    },
+    "1": {
+      "precision": 0.4666666666666667,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.5137614678899083,
+      "support": 49.0
+    },
+    "accuracy": 0.93375,
+    "macro avg": {
+      "precision": 0.7191441441441442,
+      "recall": 0.7644093589499714,
+      "f1-score": 0.7391074274392533,
+      "support": 800.0
+    },
+    "weighted avg": {
+      "precision": 0.9406931306306306,
+      "recall": 0.93375,
+      "f1-score": 0.9368485069438034,
+      "support": 800.0
+    }
+  },
+  "feature_importance": {
+    "soil_moisture_pct": 0.533407140095296,
+    "rainfall_mm_last_72h": 0.2313856952237365,
+    "vibration_intensity": 0.09859791210446714,
+    "slope_angle_deg": 0.04614205966320749,
+    "soil_porosity_index": 0.016616776787942655,
+    "vegetation_cover_pct": 0.01392381896357864,
+    "distance_to_stream_km": 0.012421109529683432,
+    "historical_landslide_count": 0.01113915386044736,
+    "rainfall_mm_last_24h": 0.00924466283023992,
+    "humidity_pct": 0.008671294548040585,
+    "temperature_c": 0.008487596944595926,
+    "elevation_m": 0.006531931347364426,
+    "soil_type_encoded": 0.002822120642973631,
+    "days_since_last_rainfall": 0.0006087274584261804
+  },
+  "n_train": 3200,
+  "n_test": 800
+}
