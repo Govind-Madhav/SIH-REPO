@@ -44,3 +44,15 @@ jwt:
 
 cors:
   allowed-origins: "http://localhost:5173,http://localhost:3000"
+
+ml:
+  prediction:
+    enabled: false
+    base-url: http://localhost:8000
+    timeout: 5000
+
+risk:
+  predictive:
+    critical-threshold: 0.80
+    high-threshold: 0.60
+    medium-threshold: 0.30
