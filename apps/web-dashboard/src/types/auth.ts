@@ -1,17 +1,19 @@
 export type UserRole =
-  | 'SUPER_ADMIN'
   | 'ADMIN'
-  | 'DISTRICT_AUTHORITY'
   | 'LOGISTICS_OPERATOR'
+  | 'EMERGENCY_OPERATOR'
   | 'FIELD_OFFICER'
   | 'DRIVER';
 
 export interface User {
-  id: string;
+  id: string | number;
   fullName: string;
   email: string;
   phone?: string;
+  username?: string;
   role: UserRole;
+  roles?: string[];
+  permissions?: string[];
   organization?: string;
   district?: string;
   is_active?: boolean;
@@ -20,8 +22,8 @@ export interface User {
 
 export interface AuthTokens {
   accessToken: string;
-  refreshToken: string;
-  sessionId: string;
+  refreshToken?: string;
+  sessionId?: string;
   expiresIn?: string;
 }
 
