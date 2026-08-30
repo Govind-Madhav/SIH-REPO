@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   servlet:
     context-path: /
 
@@ -39,20 +39,20 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 jwt:
-  secret: dGhpcy1pcy1hLXNlY3VyZS0yNTYtYml0LXNlY3JldC1rZXktZm9yLXNpLWxvZ2lzdGljcy0yMDI2
-  expiration-ms: 86400000
+  secret: ${JWT_SECRET:dGhpcy1pcy1hLXNlY3VyZS0yNTYtYml0LXNlY3JldC1rZXktZm9yLXNpLWxvZ2lzdGljcy0yMDI2}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
 cors:
-  allowed-origins: "http://localhost:5173,http://localhost:3000"
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
 
 ml:
   prediction:
-    enabled: false
-    base-url: http://localhost:8000
-    timeout: 5000
+    enabled: ${ML_PREDICTION_ENABLED:false}
+    base-url: ${ML_SERVICE_URL:http://localhost:8000}
+    timeout: ${ML_SERVICE_TIMEOUT:5000}
 
 risk:
   predictive:
-    critical-threshold: 0.80
-    high-threshold: 0.60
-    medium-threshold: 0.30
+    critical-threshold: ${RISK_CRITICAL_THRESHOLD:0.80}
+    high-threshold: ${RISK_HIGH_THRESHOLD:0.60}
+    medium-threshold: ${RISK_MEDIUM_THRESHOLD:0.30}
