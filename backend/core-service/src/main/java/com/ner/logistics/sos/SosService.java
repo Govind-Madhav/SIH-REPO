@@ -35,21 +35,44 @@ public class SosService {
                 .location(spatialPoint)
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
-                .emergencyType(dto.getEmergencyType() != null ? dto.getEmergencyType() : "LANDSLIDE_TRAPPED")
-                .message(dto.getMessage())
-                .status("ACTIVE")
+                .emergencyType(dto.getEmergencyType() != null ? dto.getEmergencyType() : "HARDWARE_PANIC_BUTTON")
+                .message(dto.getMessage() != null ? dto.getMessage() : "Panic button triggered on telematics hardware wire")
+                .status("TRIGGERED")
                 .deliveryType("DIRECT_CELLULAR")
                 .originTimestamp(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
                 .build();
 
         SosEvent savedEvent = sosEventRepository.save(event);
-        log.warn("🚨 DIRECT SOS TRIGGERED by user={}, vehicle={}, location=({}, {})", username, dto.getVehicleCode(), dto.getLatitude(), dto.getLongitude());
+        log.warn("🚨 SOS TRIGGERED by user={}, vehicle={}, location=({}, {})", username, dto.getVehicleCode(), dto.getLatitude(), dto.getLongitude());
 
         // Instant Emergency Broadcast via WebSockets
         messagingTemplate.convertAndSend("/topic/sos-alerts", savedEvent);
 
         return savedEvent;
+    }
+
+    @Transactional
+    public void processHardwareSosTrigger(String vehicleCode, Double lat, Double lng) {
+        // Prevent duplicate flooding: check if vehicle has an active non-resolved SOS created within last 5 minutes
+        List<SosEvent> activeSos = sosEventRepository.findByVehicleCodeAndStatusNot(vehicleCode, "RESOLVED");
+        LocalDateTime fiveMinsAgo = LocalDateTime.now().minusMinutes(5);
+        boolean recentExists = activeSos.stream().anyMatch(e -> e.getCreatedAt() != null && e.getCreatedAt().isAfter(fiveMinsAgo));
+
+        if (recentExists) {
+            log.info("ℹ️ HARDWARE SOS DEDUPLICATED: Vehicle {} sent repeated panic wire signal within 5 min window.", vehicleCode);
+            return;
+        }
+
+        SosRequestDto dto = SosRequestDto.builder()
+                .vehicleCode(vehicleCode)
+                .latitude(lat)
+                .longitude(lng)
+                .emergencyType("HARDWARE_PANIC_BUTTON")
+                .message("AIS-140 Panic button physically pressed in vehicle cab")
+                .build();
+
+        triggerSos(dto, "HARDWARE_AIS140");
     }
 
     @Transactional
@@ -64,7 +87,7 @@ public class SosService {
         Optional<SosEvent> existingOpt = sosEventRepository.findByMeshPacketId(dto.getMeshPacketId());
         if (existingOpt.isPresent()) {
             log.info("ℹ️ DUPLICATE SOS MESH RELAY IGNORED: Packet {} was already delivered by a previous relay vehicle.", dto.getMeshPacketId());
-            return existingOpt.get(); // Return existing delivered SOS event without duplicating
+            return existingOpt.get();
         }
 
         Point spatialPoint = geometryFactory.createPoint(new Coordinate(dto.getOriginLongitude(), dto.getOriginLatitude()));
@@ -83,7 +106,7 @@ public class SosService {
                 .longitude(dto.getOriginLongitude())
                 .emergencyType(dto.getEmergencyType() != null ? dto.getEmergencyType() : "LANDSLIDE_TRAPPED")
                 .message(dto.getMessage() != null ? dto.getMessage() : "Offline P2P Mesh SOS: Vehicle trapped in zero connectivity shadow zone")
-                .status("ACTIVE")
+                .status("RECEIVED")
                 .deliveryType("MESH_RELAY_STORE_FORWARD")
                 .relayedByVehicle(dto.getRelayedByVehicleCode())
                 .relayHopCount(dto.getHopCount() != null ? dto.getHopCount() : 1)
@@ -96,7 +119,6 @@ public class SosService {
         log.warn("⚡ MESH RELAYED SOS RECEIVED & SAVED: Origin Vehicle={}, Trapped Location=({}, {}), Carried by Vehicle={}, Latency={} mins",
                 dto.getOriginVehicleCode(), dto.getOriginLatitude(), dto.getOriginLongitude(), dto.getRelayedByVehicleCode(), latency);
 
-        // Create Reverse ACK Record for trapped driver notification
         SosAck ack = SosAck.builder()
                 .meshPacketId(dto.getMeshPacketId())
                 .originVehicleCode(dto.getOriginVehicleCode())
@@ -106,14 +128,53 @@ public class SosService {
                 .build();
         sosAckRepository.save(ack);
 
-        // Broadcast High-Priority Mesh SOS Alert over WebSockets
         messagingTemplate.convertAndSend("/topic/sos-alerts", savedEvent);
 
         return savedEvent;
     }
 
+    public SosEvent getSosById(Long id) {
+        return sosEventRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("SOS event not found with ID: " + id));
+    }
+
+    @Transactional
+    public SosEvent acknowledgeSos(Long id, String username) {
+        SosEvent event = getSosById(id);
+        event.setStatus("ACKNOWLEDGED");
+        event.setAcknowledgedBy(username != null ? username : "CENTRAL_COMMAND");
+        event.setAcknowledgedAt(LocalDateTime.now());
+        SosEvent updated = sosEventRepository.save(event);
+        messagingTemplate.convertAndSend("/topic/sos-alerts", updated);
+        log.info("✅ SOS event #{} ACKNOWLEDGED by {}", id, username);
+        return updated;
+    }
+
+    @Transactional
+    public SosEvent assignResponder(Long id, String responderName) {
+        SosEvent event = getSosById(id);
+        event.setStatus("RESPONDER_ASSIGNED");
+        event.setAssignedResponder(responderName != null ? responderName : "Haflong Sector Emergency Team");
+        SosEvent updated = sosEventRepository.save(event);
+        messagingTemplate.convertAndSend("/topic/sos-alerts", updated);
+        log.info("👮 SOS event #{} assigned to responder: {}", id, responderName);
+        return updated;
+    }
+
+    @Transactional
+    public SosEvent resolveSos(Long id, String resolutionNotes) {
+        SosEvent event = getSosById(id);
+        event.setStatus("RESOLVED");
+        event.setResolvedAt(LocalDateTime.now());
+        event.setResolutionNotes(resolutionNotes != null ? resolutionNotes : "Emergency situation resolved, vehicle evacuated successfully.");
+        SosEvent updated = sosEventRepository.save(event);
+        messagingTemplate.convertAndSend("/topic/sos-alerts", updated);
+        log.info("🏁 SOS event #{} RESOLVED. Notes: {}", id, resolutionNotes);
+        return updated;
+    }
+
     public List<SosEvent> getActiveSosEvents() {
-        return sosEventRepository.findByStatus("ACTIVE");
+        return sosEventRepository.findByStatusNot("RESOLVED");
     }
 
     public List<SosAck> getActiveAcks() {

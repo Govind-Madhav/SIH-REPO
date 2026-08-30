@@ -40,8 +40,16 @@ public class IncidentController {
         return ResponseEntity.ok(incidentService.getNearbyIncidents(lat, lng, distanceMeters));
     }
 
+    @PostMapping("/sync")
+    public ResponseEntity<List<Incident>> syncOfflineIncidents(@RequestBody List<CreateIncidentDto> dtos, Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : "FIELD_OFFICER";
+        List<Incident> synced = incidentService.syncOfflineIncidents(dtos, username);
+        return ResponseEntity.ok(synced);
+    }
+
     @PutMapping("/{id}/lifecycle")
     public ResponseEntity<Incident> updateLifecycle(@PathVariable Long id, @RequestParam String verificationStatus) {
         return ResponseEntity.ok(incidentService.updateLifecycleStatus(id, verificationStatus));
     }
 }
+

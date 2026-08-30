@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -12,15 +13,22 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DecisionRecommendationDto {
 
-    private String decisionType; // REROUTE_VEHICLE, HOLD_SHIPMENT, DISPATCH_OFFICER, MARK_CORRIDOR_INACCESSIBLE
+    private String decisionType; // REROUTE_VEHICLE, HOLD_SHIPMENT, DISPATCH_FIELD_OFFICER, ESCALATE_EMERGENCY, PRIORITIZE_SHIPMENT, MONITOR
 
-    private String priority; // CRITICAL, HIGH, MEDIUM
+    private String priority; // CRITICAL, HIGH, MEDIUM, NORMAL
 
-    private String targetEntity; // Vehicle NER-07, Fuel Tanker NER-04, Corridor NH-27
+    private String targetEntity; // e.g. Vehicle NER-07 (Medical Convoy)
+
+    private String affectedVehicle;
+
+    private String affectedShipment;
 
     private String recommendedAction; // Actionable instruction string
 
     private String destinationDistrict; // Dima Hasao, Silchar, etc.
 
     private String rationale;
+
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

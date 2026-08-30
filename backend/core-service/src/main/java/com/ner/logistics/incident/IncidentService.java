@@ -79,6 +79,33 @@ public class IncidentService {
         return savedIncident;
     }
 
+    @Transactional
+    public List<Incident> syncOfflineIncidents(List<CreateIncidentDto> dtos, String username) {
+        log.info("🔄 Offline Field Sync: Processing {} offline report(s) submitted by {}", dtos.size(), username);
+        List<Incident> syncedList = new java.util.ArrayList<>();
+
+        for (CreateIncidentDto dto : dtos) {
+            // Idempotency check: if clientGeneratedId is present and already saved, return existing
+            if (dto.getClientGeneratedId() != null && !dto.getClientGeneratedId().isBlank()) {
+                var existingOpt = incidentRepository.findByClientGeneratedId(dto.getClientGeneratedId());
+                if (existingOpt.isPresent()) {
+                    log.info("ℹ️ Offline Sync Idempotent Match: Skipping duplicate clientGeneratedId {}", dto.getClientGeneratedId());
+                    syncedList.add(existingOpt.get());
+                    continue;
+                }
+            }
+
+            Incident created = createIncident(dto, username);
+            created.setClientGeneratedId(dto.getClientGeneratedId());
+            created.setCreatedOfflineAt(dto.getCreatedOfflineAt() != null ? dto.getCreatedOfflineAt() : LocalDateTime.now());
+            created.setSyncStatus("SYNCED");
+            syncedList.add(incidentRepository.save(created));
+        }
+
+        return syncedList;
+    }
+
+
     public IncidentImpactSummaryDto analyzeImpact(Long incidentId) {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new RuntimeException("Incident not found: " + incidentId));

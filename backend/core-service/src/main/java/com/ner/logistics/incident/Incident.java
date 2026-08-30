@@ -46,14 +46,25 @@ public class Incident {
 
     private Double confidenceLevel; // 0% to 100% based on geographic clustering
 
+    private String locationName;
+
+    private String status; // ACTIVE, RESOLVED, UNDER_INVESTIGATION
+
     @Column(columnDefinition = "TEXT")
     private String photoUrlsJson; // Evidence photo URLs
 
-    private String status; // ACTIVE, RESOLVED, UNDER_INVESTIGATION
+    private String clientGeneratedId; // UUID generated offline on mobile client
+
+
+    private LocalDateTime createdOfflineAt;
+
+    private String syncStatus; // PENDING, SYNCING, SYNCED, FAILED
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+
 
     @PrePersist
     protected void onCreate() {

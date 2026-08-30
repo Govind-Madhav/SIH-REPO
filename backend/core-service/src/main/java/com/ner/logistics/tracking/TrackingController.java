@@ -1,15 +1,20 @@
 package com.ner.logistics.tracking;
 
+import com.ner.logistics.device.DeviceService;
 import com.ner.logistics.incident.Incident;
 import com.ner.logistics.incident.IncidentRepository;
+import com.ner.logistics.sos.SosService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/tracking")
 @RequiredArgsConstructor
@@ -19,6 +24,8 @@ public class TrackingController {
     private final RedisTrackingService redisTrackingService;
     private final VehicleLocationRepository vehicleLocationRepository;
     private final IncidentRepository incidentRepository;
+    private final DeviceService deviceService;
+    private final SosService sosService;
 
     @PostMapping("/location")
     public ResponseEntity<GpsLocationDto> ingestLocation(@Valid @RequestBody GpsLocationDto dto) {
@@ -33,7 +40,17 @@ public class TrackingController {
     }
 
     @PostMapping("/telematics/ais140")
-    public ResponseEntity<GpsLocationDto> ingestHardwareTelematics(@Valid @RequestBody HardwareTelematicsIngestDto dto) {
+    public ResponseEntity<?> ingestHardwareTelematics(
+            @Valid @RequestBody HardwareTelematicsIngestDto dto,
+            @RequestHeader(value = "X-DEVICE-KEY", required = false) String deviceKey) {
+
+        // Validate Device Security & Status
+        boolean isValid = deviceService.validateAndTouchDevice(dto.getImei(), deviceKey);
+        if (!isValid) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Device authentication failed or device status is REVOKED/INACTIVE");
+        }
+
         String code = dto.getVehicleCode() != null ? dto.getVehicleCode() : "NER-" + dto.getImei().substring(Math.max(0, dto.getImei().length() - 2));
 
         GpsLocationDto gpsDto = GpsLocationDto.builder()
@@ -47,6 +64,12 @@ public class TrackingController {
 
         // Publish directly into Kafka high-frequency streaming pipeline
         trackingKafkaProducer.publishLocationUpdate(gpsDto);
+
+        // Hardware Panic Wire Check -> Trigger SOS if pressed
+        if (Boolean.TRUE.equals(dto.getSosButtonPressed())) {
+            log.warn("🚨 HARDWARE SOS PANIC BUTTON DETECTED on Telematics Unit IMEI={} Vehicle={}", dto.getImei(), code);
+            sosService.processHardwareSosTrigger(code, dto.getLatitude(), dto.getLongitude());
+        }
 
         return ResponseEntity.ok(gpsDto);
     }

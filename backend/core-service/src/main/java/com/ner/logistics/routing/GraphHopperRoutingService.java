@@ -19,8 +19,8 @@ public class GraphHopperRoutingService {
 
     public RouteResponseDto calculateRoute(RouteRequestDto request) {
         List<Incident> activeIncidents = incidentRepository.findByStatus("ACTIVE");
-
-        boolean primaryHasDisruption = !activeIncidents.isEmpty();
+        int incidentCount = activeIncidents.size();
+        boolean primaryHasDisruption = incidentCount > 0;
 
         // Primary Corridor Waypoints (NH-27 Guwahati -> Nagaon -> Haflong -> Silchar)
         List<RoutePoint> primaryWaypoints = List.of(
@@ -39,14 +39,19 @@ public class GraphHopperRoutingService {
         );
 
         boolean isRerouteNeeded = primaryHasDisruption || Boolean.TRUE.equals(request.getAvoidHazardZones());
+        String action = isRerouteNeeded ? "REROUTE" : "PROCEED_PRIMARY";
         String rerouteReason = isRerouteNeeded
-                ? "🚨 Primary NH-27 Corridor is BLOCKED by landslide debris at Haflong Pass. Rerouting via Haflong Bypass Corridor (132 km - LOW RISK)."
+                ? "🚨 Critical landslide risk detected on primary corridor at Haflong Pass (" + incidentCount + " active hazard zone(s))"
                 : "Primary NH-27 Corridor is clear and accessible.";
 
         RouteResponseDto response = RouteResponseDto.builder()
                 .vehicleCode(request.getVehicleCode() != null ? request.getVehicleCode() : "NER-07")
                 .isRerouteRecommended(isRerouteNeeded)
+                .recommendationAction(action)
                 .rerouteReason(rerouteReason)
+                .estimatedDelayMinutes(isRerouteNeeded ? 28 : 0)
+                .riskReduction(isRerouteNeeded ? "HIGH" : "NONE")
+                .affectedIncidentsCount(incidentCount)
                 .primaryDistanceKm(340.0)
                 .primaryEtaMinutes(260)
                 .primaryRiskLevel(primaryHasDisruption ? "CRITICAL" : "LOW")
@@ -71,7 +76,7 @@ public class GraphHopperRoutingService {
                 .build();
 
         RouteResponseDto response = calculateRoute(dto);
-        log.info("🗺️ GraphHopper Rerouting Service: Calculated alternate bypass route for vehicle {}", vehicleCode);
+        log.info("MAP Rerouting Service: Calculated alternate bypass route for vehicle {}", vehicleCode);
 
         // Broadcast reroute update to WebSocket clients for live Leaflet map rendering
         messagingTemplate.convertAndSend("/topic/route-updates", response);

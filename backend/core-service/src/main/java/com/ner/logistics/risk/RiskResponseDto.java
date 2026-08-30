@@ -23,5 +23,9 @@ public class RiskResponseDto {
 
     private Double historicalRiskPct;
 
+    @Builder.Default
+    private String sourceTag = "RULE_BASED_REAL_TIME"; // RULE_BASED_REAL_TIME, ML_PREDICTED
+
     private List<String> factors; // Natural language explainability strings
 }
+

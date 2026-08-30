@@ -21,7 +21,11 @@ public class NotificationDto {
 
     private String message;
 
+    @Builder.Default
+    private String languageCode = "en"; // en, hi
+
     private List<String> targetRecipients; // Dashboard, Logistics Operator, Driver, Admin, Emergency Authorities
 
     private String timestamp;
 }
+

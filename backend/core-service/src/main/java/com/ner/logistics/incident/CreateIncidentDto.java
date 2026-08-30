@@ -31,5 +31,10 @@ public class CreateIncidentDto {
 
     private Double rainfallMm24h;
 
+    private String clientGeneratedId;
+
+    private java.time.LocalDateTime createdOfflineAt;
+
     private List<String> photoUrls;
 }
+

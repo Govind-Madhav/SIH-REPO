@@ -14,6 +14,7 @@ import java.util.List;
 public class AccessibilityController {
 
     private final AccessibilityEngineService accessibilityEngineService;
+    private final DistrictAccessibilityService districtAccessibilityService;
 
     @GetMapping("/corridors")
     public ResponseEntity<List<CorridorStatusDto>> getCorridors() {
@@ -23,5 +24,10 @@ public class AccessibilityController {
     @GetMapping("/districts/heatmap")
     public ResponseEntity<List<DistrictHeatmapDto>> getDistrictHeatmap() {
         return ResponseEntity.ok(accessibilityEngineService.getDistrictHeatmap());
+    }
+
+    @GetMapping("/districts")
+    public ResponseEntity<List<DistrictAccessibilityDto>> getDistrictAccessibility() {
+        return ResponseEntity.ok(districtAccessibilityService.evaluateDistrictAccessibility());
     }
 }

@@ -37,7 +37,17 @@ public class SosEvent {
 
     private String message;
 
-    private String status; // ACTIVE, DISPATCHED, RESOLVED
+    private String status; // TRIGGERED, RECEIVED, ACKNOWLEDGED, RESPONDER_ASSIGNED, RESOLVED
+
+    private String assignedResponder;
+
+    private String acknowledgedBy;
+
+    private LocalDateTime acknowledgedAt;
+
+    private LocalDateTime resolvedAt;
+
+    private String resolutionNotes;
 
     @Builder.Default
     private String deliveryType = "DIRECT_CELLULAR"; // DIRECT_CELLULAR, MESH_RELAY_STORE_FORWARD
@@ -52,3 +62,4 @@ public class SosEvent {
 
     private LocalDateTime createdAt;
 }
+

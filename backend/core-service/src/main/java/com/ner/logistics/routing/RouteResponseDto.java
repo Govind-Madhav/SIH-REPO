@@ -19,6 +19,14 @@ public class RouteResponseDto {
 
     private String rerouteReason;
 
+    private String recommendationAction; // REROUTE, PROCEED_PRIMARY, HOLD
+
+    private Integer estimatedDelayMinutes;
+
+    private String riskReduction; // HIGH, MEDIUM, LOW, NONE
+
+    private Integer affectedIncidentsCount;
+
     private Double primaryDistanceKm;
 
     private Integer primaryEtaMinutes;
