@@ -45,9 +45,11 @@ public enum Permission {
     GEOFENCE_MANAGE,
     RISK_CORRIDOR_MANAGE,
     RISK_CORRIDOR_VIEW,
+    EMERGENCY_CORRIDOR_MANAGE,
 
     // Emergency Resource Management
     EMERGENCY_RESOURCE_MANAGE,
+    EMERGENCY_RESOURCE_VIEW,
 
     // Data Retention & Archival Policies
     DATA_RETENTION_MANAGE,

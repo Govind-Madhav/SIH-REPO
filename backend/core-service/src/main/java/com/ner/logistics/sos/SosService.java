@@ -26,6 +26,23 @@ public class SosService {
 
     @Transactional
     public SosEvent triggerSos(SosRequestDto dto, String username) {
+        // Step 18: SOS Duplicate Detection (same vehicle created within last 5 minutes)
+        List<SosEvent> activeSos = sosEventRepository.findByVehicleCodeAndStatusNot(
+                dto.getVehicleCode() != null ? dto.getVehicleCode() : "NER-07", "RESOLVED");
+
+        LocalDateTime fiveMinsAgo = LocalDateTime.now().minusMinutes(5);
+        Optional<SosEvent> recentOpt = activeSos.stream()
+                .filter(e -> e.getCreatedAt() != null && e.getCreatedAt().isAfter(fiveMinsAgo))
+                .findFirst();
+
+        if (recentOpt.isPresent()) {
+            SosEvent existing = recentOpt.get();
+            existing.setMessage("UPDATED: " + (dto.getMessage() != null ? dto.getMessage() : "Repeated SOS trigger"));
+            sosEventRepository.save(existing);
+            log.info("ℹ️ SOS DEDUPLICATED: Vehicle {} updated existing active SOS #{}", dto.getVehicleCode(), existing.getId());
+            return existing;
+        }
+
         Point spatialPoint = geometryFactory.createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude()));
         spatialPoint.setSRID(4326);
 
@@ -46,15 +63,12 @@ public class SosService {
         SosEvent savedEvent = sosEventRepository.save(event);
         log.warn("🚨 SOS TRIGGERED by user={}, vehicle={}, location=({}, {})", username, dto.getVehicleCode(), dto.getLatitude(), dto.getLongitude());
 
-        // Instant Emergency Broadcast via WebSockets
         messagingTemplate.convertAndSend("/topic/sos-alerts", savedEvent);
-
         return savedEvent;
     }
 
     @Transactional
     public void processHardwareSosTrigger(String vehicleCode, Double lat, Double lng) {
-        // Prevent duplicate flooding: check if vehicle has an active non-resolved SOS created within last 5 minutes
         List<SosEvent> activeSos = sosEventRepository.findByVehicleCodeAndStatusNot(vehicleCode, "RESOLVED");
         LocalDateTime fiveMinsAgo = LocalDateTime.now().minusMinutes(5);
         boolean recentExists = activeSos.stream().anyMatch(e -> e.getCreatedAt() != null && e.getCreatedAt().isAfter(fiveMinsAgo));
@@ -77,13 +91,11 @@ public class SosService {
 
     @Transactional
     public SosEvent processRelayedSos(SosRelayRequestDto dto) {
-        // Rule 1: Max 5 Hops Limit
         if (dto.getHopCount() != null && dto.getHopCount() > 5) {
             log.warn("⚠️ REJECTED SOS MESH RELAY: Packet {} exceeded max 5 hops (hopCount={})", dto.getMeshPacketId(), dto.getHopCount());
             throw new IllegalArgumentException("REJECTED: Mesh packet exceeded maximum allowed 5 hops");
         }
 
-        // Rule 2: Idempotency & Deduplication
         Optional<SosEvent> existingOpt = sosEventRepository.findByMeshPacketId(dto.getMeshPacketId());
         if (existingOpt.isPresent()) {
             log.info("ℹ️ DUPLICATE SOS MESH RELAY IGNORED: Packet {} was already delivered by a previous relay vehicle.", dto.getMeshPacketId());
@@ -129,7 +141,6 @@ public class SosService {
         sosAckRepository.save(ack);
 
         messagingTemplate.convertAndSend("/topic/sos-alerts", savedEvent);
-
         return savedEvent;
     }
 
@@ -170,6 +181,18 @@ public class SosService {
         SosEvent updated = sosEventRepository.save(event);
         messagingTemplate.convertAndSend("/topic/sos-alerts", updated);
         log.info("🏁 SOS event #{} RESOLVED. Notes: {}", id, resolutionNotes);
+        return updated;
+    }
+
+    @Transactional
+    public SosEvent markFalseAlarm(Long id, String reason) {
+        SosEvent event = getSosById(id);
+        event.setStatus("FALSE_ALARM");
+        event.setResolvedAt(LocalDateTime.now());
+        event.setResolutionNotes("FALSE ALARM: " + (reason != null ? reason : "Operator verified as false alarm"));
+        SosEvent updated = sosEventRepository.save(event);
+        messagingTemplate.convertAndSend("/topic/sos-alerts", updated);
+        log.info("ℹ️ SOS event #{} marked as FALSE_ALARM. Reason: {}", id, reason);
         return updated;
     }
 

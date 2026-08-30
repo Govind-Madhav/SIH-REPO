@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/emergency/resources")
@@ -22,15 +23,19 @@ public class EmergencyResourceController {
 
     private final AuditService auditService;
 
+    // In-memory registry tracking active emergency resource assignments to prevent double assignment
+    private static final Map<String, String> activeResourceAssignments = new ConcurrentHashMap<>();
+
     @GetMapping
-    @PreAuthorize("hasAuthority('EMERGENCY_RESOURCE_MANAGE') or hasAuthority('SOS_VIEW')")
+    @PreAuthorize("hasAuthority('EMERGENCY_RESOURCE_MANAGE') or hasAuthority('EMERGENCY_RESOURCE_VIEW') or hasAuthority('SOS_VIEW')")
     public ResponseEntity<List<EmergencyResourceDto>> getAllResources() {
         List<EmergencyResourceDto> resources = List.of(
                 EmergencyResourceDto.builder()
                         .resourceId("RES-TEAM-HAFLONG-01")
                         .name("Haflong NDRF Mountain Rescue Team A")
                         .resourceType("RESCUE_TEAM")
-                        .status("AVAILABLE")
+                        .status(activeResourceAssignments.containsKey("RES-TEAM-HAFLONG-01") ? "ASSIGNED" : "AVAILABLE")
+                        .assignedSosId(activeResourceAssignments.get("RES-TEAM-HAFLONG-01"))
                         .baseLocation("Haflong Sector HQ")
                         .contactPhone("+919876500111")
                         .build(),
@@ -38,7 +43,8 @@ public class EmergencyResourceController {
                         .resourceId("RES-AMB-SILCHAR-04")
                         .name("Silchar Medical 4WD ICU Ambulance")
                         .resourceType("AMBULANCE")
-                        .status("AVAILABLE")
+                        .status(activeResourceAssignments.containsKey("RES-AMB-SILCHAR-04") ? "ASSIGNED" : "AVAILABLE")
+                        .assignedSosId(activeResourceAssignments.get("RES-AMB-SILCHAR-04"))
                         .baseLocation("Silchar Medical College Hospital")
                         .contactPhone("+919876500222")
                         .build(),
@@ -73,6 +79,41 @@ public class EmergencyResourceController {
         return ResponseEntity.ok(dto);
     }
 
+    @PostMapping("/{resourceId}/assign-sos/{sosId}")
+    @PreAuthorize("hasAuthority('SOS_DISPATCH') or hasAuthority('EMERGENCY_RESOURCE_MANAGE')")
+    public ResponseEntity<?> assignResourceToSos(@PathVariable String resourceId,
+                                                   @PathVariable String sosId,
+                                                   @AuthenticationPrincipal User actor) {
+        // Step 5 Double Assignment Prevention Check
+        if (activeResourceAssignments.containsKey(resourceId) && !sosId.equals(activeResourceAssignments.get(resourceId))) {
+            return ResponseEntity.status(409).body(Map.of(
+                    "error", "Resource Double Assignment Conflict: Emergency Resource " + resourceId + " is currently assigned to SOS #" + activeResourceAssignments.get(resourceId)
+            ));
+        }
+
+        activeResourceAssignments.put(resourceId, sosId);
+
+        auditService.logDetailedEvent(
+                actor != null ? actor.getUsername() : "EMERGENCY_OPERATOR",
+                actor != null ? actor.getRole().name() : "EMERGENCY_OPERATOR",
+                "EMERGENCY_RESOURCE_ASSIGNED",
+                "EmergencyResource",
+                resourceId,
+                "AVAILABLE",
+                "ASSIGNED_TO_SOS_" + sosId,
+                "Dispatched emergency resource " + resourceId + " to SOS #" + sosId,
+                null,
+                "SUCCESS"
+        );
+
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "resourceId", resourceId,
+                "assignedSosId", sosId,
+                "message", "Emergency resource " + resourceId + " successfully dispatched to SOS #" + sosId
+        ));
+    }
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -82,6 +123,7 @@ public class EmergencyResourceController {
         private String name;
         private String resourceType; // RESCUE_TEAM, AMBULANCE, HEAVY_EQUIPMENT, PERSONNEL
         private String status;       // AVAILABLE, ASSIGNED, EN_ROUTE, BUSY, UNAVAILABLE
+        private String assignedSosId;
         private String baseLocation;
         private String contactPhone;
     }
