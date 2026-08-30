@@ -32,6 +32,25 @@ public class TrackingController {
         return ResponseEntity.ok(dto);
     }
 
+    @PostMapping("/telematics/ais140")
+    public ResponseEntity<GpsLocationDto> ingestHardwareTelematics(@Valid @RequestBody HardwareTelematicsIngestDto dto) {
+        String code = dto.getVehicleCode() != null ? dto.getVehicleCode() : "NER-" + dto.getImei().substring(Math.max(0, dto.getImei().length() - 2));
+
+        GpsLocationDto gpsDto = GpsLocationDto.builder()
+                .vehicleCode(code)
+                .latitude(dto.getLatitude())
+                .longitude(dto.getLongitude())
+                .speedKmh(dto.getSpeedKmh() != null ? dto.getSpeedKmh() : 0.0)
+                .headingDegrees(dto.getHeadingDegrees() != null ? dto.getHeadingDegrees() : 0.0)
+                .timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now())
+                .build();
+
+        // Publish directly into Kafka high-frequency streaming pipeline
+        trackingKafkaProducer.publishLocationUpdate(gpsDto);
+
+        return ResponseEntity.ok(gpsDto);
+    }
+
     @GetMapping("/latest/{vehicleCode}")
     public ResponseEntity<GpsLocationDto> getLatestLocation(@PathVariable String vehicleCode) {
         return redisTrackingService.getLatestLocation(vehicleCode)
