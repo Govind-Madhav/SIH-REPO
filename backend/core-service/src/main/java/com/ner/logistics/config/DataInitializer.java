@@ -88,7 +88,7 @@ public class DataInitializer implements CommandLineRunner {
                     Vehicle.builder().code("NER-04").licensePlate("AS-03-GH-4004").vehicleType("Fuel Tanker").capacityTons(15.0).status("ON_TRACK").build(),
                     Vehicle.builder().code("NER-05").licensePlate("AS-04-IJ-5005").vehicleType("Disaster Relief Goods").capacityTons(9.0).status("ON_TRACK").build(),
                     Vehicle.builder().code("NER-06").licensePlate("ML-05-KL-6006").vehicleType("Water Transport Truck").capacityTons(11.0).status("ON_TRACK").build(),
-                    Vehicle.builder().code("NER-07").licensePlate("AS-01-HA-7007").vehicleType("Medical Critical Convoy").capacityTons(7.5).status("ON_TRACK").build(),
+                    Vehicle.builder().code("NER-07").licensePlate("AS-01-HA-7007").vehicleType("Medical Critical Convoy").capacityTons(7.5).assignedDriverUsername("driver").status("ON_TRACK").build(),
                     Vehicle.builder().code("NER-08").licensePlate("TR-01-MN-8008").vehicleType("Bridge Repair Supplies").capacityTons(14.0).status("ON_TRACK").build()
             );
             vehicleRepository.saveAll(initialVehicles);
@@ -108,7 +108,7 @@ public class DataInitializer implements CommandLineRunner {
         // 4. Seed Essential Logistics Shipments
         if (shipmentRepository.count() == 0) {
             List<Shipment> initialShipments = List.of(
-                    Shipment.builder().vehicleCode("NER-07").commodityType("MEDICINE").priority("CRITICAL").origin("Guwahati Central Store").destination("Silchar Civil Hospital").status("IN_TRANSIT").build(),
+                    Shipment.builder().vehicleCode("NER-07").assignedDriverUsername("driver").commodityType("MEDICINE").priority("CRITICAL").origin("Guwahati Central Store").destination("Silchar Civil Hospital").status("IN_TRANSIT").build(),
                     Shipment.builder().vehicleCode("NER-01").commodityType("OXYGEN_CYLINDERS").priority("CRITICAL").origin("Guwahati Industrial Oxygen").destination("Haflong Sub-Divisional Hospital").status("IN_TRANSIT").build(),
                     Shipment.builder().vehicleCode("NER-02").commodityType("BABY_FOOD").priority("HIGH").origin("Shillong Warehouse").destination("Silchar Relief Camp").status("IN_TRANSIT").build(),
                     Shipment.builder().vehicleCode("NER-04").commodityType("FUEL").priority("HIGH").origin("Numaligarh Refinery").destination("Haflong Power Substation").status("IN_TRANSIT").build()

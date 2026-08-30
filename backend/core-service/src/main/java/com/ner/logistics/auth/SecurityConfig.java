@@ -41,7 +41,8 @@ public class SecurityConfig {
                                 "/api/sos/relay",
                                 "/api/sos/acks",
                                 "/api/tracking/telematics/**",
-                                "/api/i18n/**"
+                                "/api/i18n/**",
+                                "/uploads/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -80,9 +81,31 @@ public class IncidentService {
     }
 
     @Transactional
+    public void attachPhotoEvidence(Long incidentId, String fileUrl) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new IllegalArgumentException("Incident not found with ID: " + incidentId));
+
+        List<String> currentPhotos = new ArrayList<>();
+        if (incident.getPhotoUrlsJson() != null && !incident.getPhotoUrlsJson().isBlank()) {
+            try {
+                currentPhotos = objectMapper.readValue(incident.getPhotoUrlsJson(), objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
+            } catch (Exception ignored) {}
+        }
+
+        currentPhotos.add(fileUrl);
+        try {
+            incident.setPhotoUrlsJson(objectMapper.writeValueAsString(currentPhotos));
+            incidentRepository.save(incident);
+            log.info("📸 Attached photo evidence URL {} to Incident #{}", fileUrl, incidentId);
+        } catch (JsonProcessingException e) {
+            log.error("Error serializing photo JSON for incident #{}", incidentId, e);
+        }
+    }
+
+    @Transactional
     public List<Incident> syncOfflineIncidents(List<CreateIncidentDto> dtos, String username) {
         log.info("🔄 Offline Field Sync: Processing {} offline report(s) submitted by {}", dtos.size(), username);
-        List<Incident> syncedList = new java.util.ArrayList<>();
+        List<Incident> syncedList = new ArrayList<>();
 
         for (CreateIncidentDto dto : dtos) {
             // Idempotency check: if clientGeneratedId is present and already saved, return existing

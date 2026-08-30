@@ -12,12 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @RestController
@@ -32,6 +34,9 @@ public class TrackingController {
     private final DeviceService deviceService;
     private final SosService sosService;
 
+    // Cache for clientEventId deduplication
+    private final Set<String> processedEventIds = ConcurrentHashMap.newKeySet();
+
     @PostMapping("/location")
     public ResponseEntity<GpsLocationDto> ingestLocation(@Valid @RequestBody GpsLocationDto dto) {
         if (dto.getTimestamp() == null) {
@@ -42,6 +47,37 @@ public class TrackingController {
         trackingKafkaProducer.publishLocationUpdate(dto);
 
         return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/location/batch")
+    public ResponseEntity<List<GpsLocationDto>> ingestBatchLocations(@RequestBody BatchGpsLocationDto batchDto) {
+        List<GpsLocationDto> processed = new ArrayList<>();
+
+        if (batchDto.getEvents() != null) {
+            for (GpsLocationDto dto : batchDto.getEvents()) {
+                if (dto.getVehicleCode() == null && batchDto.getVehicleCode() != null) {
+                    dto.setVehicleCode(batchDto.getVehicleCode());
+                }
+
+                // Idempotency check using clientEventId or timestamp hash
+                String eventKey = dto.getVehicleCode() + "_" + (dto.getTimestamp() != null ? dto.getTimestamp().toString() : System.currentTimeMillis());
+                if (processedEventIds.contains(eventKey)) {
+                    log.info("ℹ️ Skipped duplicate offline telemetry fix for vehicle {}", dto.getVehicleCode());
+                    continue;
+                }
+                processedEventIds.add(eventKey);
+
+                if (dto.getTimestamp() == null) {
+                    dto.setTimestamp(LocalDateTime.now());
+                }
+
+                trackingKafkaProducer.publishLocationUpdate(dto);
+                processed.add(dto);
+            }
+        }
+
+        log.info("🔄 Processed offline batch telemetry: {} fix(s) ingested", processed.size());
+        return ResponseEntity.ok(processed);
     }
 
     @PostMapping("/telematics/ais140")

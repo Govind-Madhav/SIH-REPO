@@ -19,6 +19,8 @@ public class Shipment {
     @Column(nullable = false)
     private String vehicleCode; // Associated vehicle (e.g. NER-07)
 
+    private String assignedDriverUsername;
+
     @Column(nullable = false)
     private String commodityType; // MEDICINE, OXYGEN, FOOD, FUEL, RELIEF_GOODS
 

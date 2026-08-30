@@ -27,6 +27,8 @@ public class Vehicle {
 
     private Long driverId;
 
+    private String assignedDriverUsername;
+
     @Column(nullable = false)
     private String status; // ON_TRACK, DELAYED, AT_RISK
 }
