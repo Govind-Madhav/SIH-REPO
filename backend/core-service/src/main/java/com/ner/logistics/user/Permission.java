@@ -96,7 +96,9 @@ public enum Permission {
 
     // Routing & Decision Support
     ROUTE_VIEW,
+    ROUTE_VIEW_SELF,
     ROUTE_APPROVE,
+    ROAD_HAZARD_FLAG_SELF,
     DELIVERY_STATUS_UPDATE,
     DECISION_VIEW,
     DECISION_APPROVE,

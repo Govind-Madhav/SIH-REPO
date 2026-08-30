@@ -65,10 +65,11 @@ public enum UserRole {
     DRIVER(EnumSet.of(
             Permission.VEHICLE_VIEW_SELF,
             Permission.SHIPMENT_VIEW_SELF,
-            Permission.ROUTE_VIEW,
+            Permission.ROUTE_VIEW_SELF,
             Permission.SOS_TRIGGER,
             Permission.SOS_VIEW_SELF,
             Permission.DELIVERY_STATUS_UPDATE,
+            Permission.ROAD_HAZARD_FLAG_SELF,
             Permission.ALERT_VIEW
     ));
 
