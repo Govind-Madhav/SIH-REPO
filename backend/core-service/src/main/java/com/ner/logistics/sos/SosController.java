@@ -30,4 +30,9 @@ public class SosController {
     public ResponseEntity<List<SosEvent>> getActiveSosEvents() {
         return ResponseEntity.ok(sosService.getActiveSosEvents());
     }
+
+    @GetMapping("/acks")
+    public ResponseEntity<List<SosAck>> getActiveAcks() {
+        return ResponseEntity.ok(sosService.getActiveAcks());
+    }
 }

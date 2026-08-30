@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -19,6 +20,7 @@ import java.util.List;
 public class SosService {
 
     private final SosEventRepository sosEventRepository;
+    private final SosAckRepository sosAckRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -52,6 +54,19 @@ public class SosService {
 
     @Transactional
     public SosEvent processRelayedSos(SosRelayRequestDto dto) {
+        // Rule 1: Max 5 Hops Limit
+        if (dto.getHopCount() != null && dto.getHopCount() > 5) {
+            log.warn("⚠️ REJECTED SOS MESH RELAY: Packet {} exceeded max 5 hops (hopCount={})", dto.getMeshPacketId(), dto.getHopCount());
+            throw new IllegalArgumentException("REJECTED: Mesh packet exceeded maximum allowed 5 hops");
+        }
+
+        // Rule 2: Idempotency & Deduplication
+        Optional<SosEvent> existingOpt = sosEventRepository.findByMeshPacketId(dto.getMeshPacketId());
+        if (existingOpt.isPresent()) {
+            log.info("ℹ️ DUPLICATE SOS MESH RELAY IGNORED: Packet {} was already delivered by a previous relay vehicle.", dto.getMeshPacketId());
+            return existingOpt.get(); // Return existing delivered SOS event without duplicating
+        }
+
         Point spatialPoint = geometryFactory.createPoint(new Coordinate(dto.getOriginLongitude(), dto.getOriginLatitude()));
         spatialPoint.setSRID(4326);
 
@@ -78,8 +93,18 @@ public class SosService {
                 .build();
 
         SosEvent savedEvent = sosEventRepository.save(event);
-        log.warn("⚡ MESH RELAYED SOS RECEIVED: Origin Vehicle={}, Trapped Location=({}, {}), Carried & Flushed by Vehicle={}, Latency={} mins",
+        log.warn("⚡ MESH RELAYED SOS RECEIVED & SAVED: Origin Vehicle={}, Trapped Location=({}, {}), Carried by Vehicle={}, Latency={} mins",
                 dto.getOriginVehicleCode(), dto.getOriginLatitude(), dto.getOriginLongitude(), dto.getRelayedByVehicleCode(), latency);
+
+        // Create Reverse ACK Record for trapped driver notification
+        SosAck ack = SosAck.builder()
+                .meshPacketId(dto.getMeshPacketId())
+                .originVehicleCode(dto.getOriginVehicleCode())
+                .status("DELIVERED_TO_COMMAND")
+                .dispatchDetails("SOS received at Central Command at " + now.toLocalTime() + ". Haflong Rescue Team alerted.")
+                .ackTimestamp(now)
+                .build();
+        sosAckRepository.save(ack);
 
         // Broadcast High-Priority Mesh SOS Alert over WebSockets
         messagingTemplate.convertAndSend("/topic/sos-alerts", savedEvent);
@@ -89,5 +114,9 @@ public class SosService {
 
     public List<SosEvent> getActiveSosEvents() {
         return sosEventRepository.findByStatus("ACTIVE");
+    }
+
+    public List<SosAck> getActiveAcks() {
+        return sosAckRepository.findAll();
     }
 }
