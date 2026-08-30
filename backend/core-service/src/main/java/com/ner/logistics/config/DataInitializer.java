@@ -31,7 +31,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // 1. Seed RBAC Users
+        // 1. Seed Demonstration Users for All 5 Core RBAC Roles
         if (userRepository.count() == 0) {
             userRepository.save(User.builder()
                     .username("admin")
@@ -44,7 +44,7 @@ public class DataInitializer implements CommandLineRunner {
 
             userRepository.save(User.builder()
                     .username("operator")
-                    .email("operator@sih.gov.in")
+                    .email("logistics@sih.gov.in")
                     .password(passwordEncoder.encode("Operator@123"))
                     .role(UserRole.LOGISTICS_OPERATOR)
                     .fullName("Logistics Command Officer")
@@ -52,8 +52,17 @@ public class DataInitializer implements CommandLineRunner {
                     .build());
 
             userRepository.save(User.builder()
+                    .username("emergency")
+                    .email("emergency@sih.gov.in")
+                    .password(passwordEncoder.encode("Emergency@123"))
+                    .role(UserRole.EMERGENCY_OPERATOR)
+                    .fullName("Disaster & Emergency Responder")
+                    .phoneNumber("+91 9876543214")
+                    .build());
+
+            userRepository.save(User.builder()
                     .username("officer")
-                    .email("officer@sih.gov.in")
+                    .email("field@sih.gov.in")
                     .password(passwordEncoder.encode("Officer@123"))
                     .role(UserRole.FIELD_OFFICER)
                     .fullName("Haflong Field Officer")

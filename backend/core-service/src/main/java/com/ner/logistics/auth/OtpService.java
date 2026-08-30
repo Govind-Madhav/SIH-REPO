@@ -1,5 +1,6 @@
 package com.ner.logistics.auth;
 
+import com.ner.logistics.user.Permission;
 import com.ner.logistics.user.User;
 import com.ner.logistics.user.UserRepository;
 import com.ner.logistics.user.UserRole;
@@ -9,10 +10,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -75,12 +77,18 @@ public class OtpService {
 
         String jwtToken = tokenProvider.generateToken(user.getUsername(), user.getRole().name());
 
+        List<String> perms = user.getRole().getPermissions().stream()
+                .map(Permission::name)
+                .collect(Collectors.toList());
+
         return AuthResponse.builder()
                 .token(jwtToken)
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .roles(List.of(user.getRole().name()))
+                .permissions(perms)
                 .fullName(user.getFullName())
                 .build();
     }

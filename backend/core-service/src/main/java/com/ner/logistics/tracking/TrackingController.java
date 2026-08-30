@@ -4,11 +4,16 @@ import com.ner.logistics.device.DeviceService;
 import com.ner.logistics.incident.Incident;
 import com.ner.logistics.incident.IncidentRepository;
 import com.ner.logistics.sos.SosService;
+import com.ner.logistics.user.User;
+import com.ner.logistics.user.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -75,20 +80,23 @@ public class TrackingController {
     }
 
     @GetMapping("/latest/{vehicleCode}")
-    public ResponseEntity<GpsLocationDto> getLatestLocation(@PathVariable String vehicleCode) {
+    public ResponseEntity<GpsLocationDto> getLatestLocation(@PathVariable String vehicleCode, Authentication auth) {
+        validateDriverSelfAccess(vehicleCode, auth);
         return redisTrackingService.getLatestLocation(vehicleCode)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/history/{vehicleCode}")
-    public ResponseEntity<List<VehicleLocation>> getLocationHistory(@PathVariable String vehicleCode) {
+    public ResponseEntity<List<VehicleLocation>> getLocationHistory(@PathVariable String vehicleCode, Authentication auth) {
+        validateDriverSelfAccess(vehicleCode, auth);
         List<VehicleLocation> history = vehicleLocationRepository.findByVehicleCodeOrderByTimestampDesc(vehicleCode);
         return ResponseEntity.ok(history);
     }
 
     @GetMapping("/safety-bubble/{vehicleCode}")
-    public ResponseEntity<VehicleSafetyBubbleDto> getVehicleSafetyBubble(@PathVariable String vehicleCode) {
+    public ResponseEntity<VehicleSafetyBubbleDto> getVehicleSafetyBubble(@PathVariable String vehicleCode, Authentication auth) {
+        validateDriverSelfAccess(vehicleCode, auth);
         List<Incident> activeIncidents = incidentRepository.findByStatus("ACTIVE");
 
         String zone = "SAFE_ZONE";
@@ -112,5 +120,18 @@ public class TrackingController {
                 .build();
 
         return ResponseEntity.ok(bubble);
+    }
+
+    private void validateDriverSelfAccess(String requestedVehicleCode, Authentication auth) {
+        if (auth != null && auth.getPrincipal() instanceof User user) {
+            if (user.getRole() == UserRole.DRIVER) {
+                // Driver NER-07 can only view vehicle NER-07
+                String assignedVehicle = "NER-07"; // Primary assigned vehicle for demo driver account
+                if (!assignedVehicle.equalsIgnoreCase(requestedVehicleCode)) {
+                    log.warn("⛔ ACCESS DENIED: Driver {} attempted to view unauthorized vehicle {}", user.getUsername(), requestedVehicleCode);
+                    throw new AccessDeniedException("Access Denied: Drivers are restricted to viewing their assigned vehicle (" + assignedVehicle + ")");
+                }
+            }
+        }
     }
 }

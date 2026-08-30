@@ -1,5 +1,6 @@
 package com.ner.logistics.auth;
 
+import com.ner.logistics.user.Permission;
 import com.ner.logistics.user.User;
 import com.ner.logistics.user.UserRepository;
 import com.ner.logistics.user.UserRole;
@@ -10,7 +11,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,6 +28,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         User user = userRepository.findByEmail(loginRequest.getEmail())
+                .or(() -> userRepository.findByUsername(loginRequest.getEmail()))
                 .orElse(null);
 
         if (user == null || !passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
@@ -33,12 +37,18 @@ public class AuthController {
 
         String token = tokenProvider.generateToken(user.getEmail(), user.getRole().name());
 
+        List<String> perms = user.getRole().getPermissions().stream()
+                .map(Permission::name)
+                .collect(Collectors.toList());
+
         AuthResponse response = AuthResponse.builder()
                 .token(token)
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .roles(List.of(user.getRole().name()))
+                .permissions(perms)
                 .fullName(user.getFullName())
                 .build();
 
@@ -85,12 +95,18 @@ public class AuthController {
 
         String token = tokenProvider.generateToken(user.getEmail(), user.getRole().name());
 
+        List<String> perms = user.getRole().getPermissions().stream()
+                .map(Permission::name)
+                .collect(Collectors.toList());
+
         AuthResponse response = AuthResponse.builder()
                 .token(token)
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .roles(List.of(user.getRole().name()))
+                .permissions(perms)
                 .fullName(user.getFullName())
                 .build();
 
@@ -104,6 +120,20 @@ public class AuthController {
         }
 
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(user);
+        List<String> perms = user.getRole().getPermissions().stream()
+                .map(Permission::name)
+                .collect(Collectors.toList());
+
+        Map<String, Object> meData = Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "fullName", user.getFullName() != null ? user.getFullName() : "",
+                "role", user.getRole().name(),
+                "roles", List.of(user.getRole().name()),
+                "permissions", perms
+        );
+
+        return ResponseEntity.ok(meData);
     }
 }
