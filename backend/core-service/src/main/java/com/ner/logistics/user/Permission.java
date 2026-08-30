@@ -3,10 +3,51 @@ package com.ner.logistics.user;
 public enum Permission {
     // Governance & System Admin
     USER_MANAGE,
+    USER_CREATE,
+    USER_VIEW,
+    USER_UPDATE,
+    USER_SUSPEND,
+    USER_REACTIVATE,
+    USER_DEACTIVATE,
     ROLE_MANAGE,
     DEVICE_MANAGE,
     SYSTEM_CONFIG_MANAGE,
     AUDIT_LOG_VIEW,
+
+    // ML Governance & Operational Parameters
+    RISK_THRESHOLD_MANAGE,
+    MODEL_VERSION_VIEW,
+    MODEL_DEPLOY,
+    MODEL_ROLLBACK,
+    MODEL_PERFORMANCE_VIEW,
+
+    // Alert Policy & Multilingual Templates
+    ALERT_POLICY_MANAGE,
+    NOTIFICATION_TEMPLATE_MANAGE,
+    LANGUAGE_CONFIGURATION_MANAGE,
+
+    // External Integration & Health
+    INTEGRATION_MANAGE,
+    INTEGRATION_HEALTH_VIEW,
+    API_CREDENTIAL_MANAGE,
+    SYSTEM_HEALTH_VIEW,
+
+    // Device Assignment & Telematics Lifecycle
+    DEVICE_ASSIGN,
+    DEVICE_UNASSIGN,
+    DEVICE_STATUS_VIEW,
+
+    // Geofencing & Corridor Intelligence
+    GEOFENCE_MANAGE,
+    RISK_CORRIDOR_MANAGE,
+
+    // Emergency Resource Management
+    EMERGENCY_RESOURCE_MANAGE,
+
+    // Data Retention & Archival Policies
+    DATA_RETENTION_MANAGE,
+    ARCHIVE_STATUS_VIEW,
+    SENSITIVE_DATA_EXPORT,
 
     // Fleet & Vehicles
     VEHICLE_VIEW,

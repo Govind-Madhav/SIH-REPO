@@ -16,7 +16,9 @@ public enum UserRole {
             Permission.ROUTE_VIEW,
             Permission.ROUTE_APPROVE,
             Permission.ANALYTICS_VIEW,
-            Permission.REPORT_EXPORT
+            Permission.REPORT_EXPORT,
+            Permission.INTEGRATION_HEALTH_VIEW,
+            Permission.RISK_CORRIDOR_MANAGE
     )),
 
     EMERGENCY_OPERATOR(EnumSet.of(
@@ -29,6 +31,7 @@ public enum UserRole {
             Permission.SOS_ACKNOWLEDGE,
             Permission.SOS_DISPATCH,
             Permission.SOS_RESOLVE,
+            Permission.EMERGENCY_RESOURCE_MANAGE,
             Permission.ROUTE_VIEW,
             Permission.ANALYTICS_VIEW
     )),

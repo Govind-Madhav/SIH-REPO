@@ -30,6 +30,11 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private UserAccountStatus status = UserAccountStatus.ACTIVE;
+
     private String fullName;
 
     private String phoneNumber;
@@ -40,5 +45,8 @@ public class User {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = UserAccountStatus.ACTIVE;
+        }
     }
 }

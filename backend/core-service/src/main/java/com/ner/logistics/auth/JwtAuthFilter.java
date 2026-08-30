@@ -2,6 +2,7 @@ package com.ner.logistics.auth;
 
 import com.ner.logistics.user.Permission;
 import com.ner.logistics.user.User;
+import com.ner.logistics.user.UserAccountStatus;
 import com.ner.logistics.user.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -42,12 +43,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         .or(() -> userRepository.findByUsername(email))
                         .orElse(null);
 
-                if (user != null) {
+                // Phase 1 Security Rule: Suspended or Deactivated accounts cannot authenticate
+                if (user != null && (user.getStatus() == null || user.getStatus() == UserAccountStatus.ACTIVE)) {
                     List<GrantedAuthority> authorities = new ArrayList<>();
-                    // Add Role Authority (e.g. ROLE_ADMIN, ROLE_LOGISTICS_OPERATOR, ROLE_EMERGENCY_OPERATOR)
                     authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
 
-                    // Add Granular Permission Authorities (e.g. USER_MANAGE, SOS_DISPATCH, INCIDENT_REPORT)
                     if (user.getRole().getPermissions() != null) {
                         for (Permission perm : user.getRole().getPermissions()) {
                             authorities.add(new SimpleGrantedAuthority(perm.name()));

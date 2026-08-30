@@ -37,10 +37,26 @@ public class DeviceService {
     }
 
     @Transactional
+    public Device assignDeviceToVehicle(String imei, String vehicleCode) {
+        Device device = deviceRepository.findByImei(imei)
+                .orElseThrow(() -> new IllegalArgumentException("Device not found with IMEI: " + imei));
+        device.setVehicleCode(vehicleCode);
+        device.setStatus("ACTIVE");
+        return deviceRepository.save(device);
+    }
+
+    @Transactional
+    public Device unassignDevice(String imei) {
+        Device device = deviceRepository.findByImei(imei)
+                .orElseThrow(() -> new IllegalArgumentException("Device not found with IMEI: " + imei));
+        device.setVehicleCode(null);
+        return deviceRepository.save(device);
+    }
+
+    @Transactional
     public boolean validateAndTouchDevice(String imei, String rawApiKey) {
         Optional<Device> optDevice = deviceRepository.findByImei(imei);
         if (optDevice.isEmpty()) {
-            // Allow unregistered devices in prototype mode if key matches fallback, but log warning
             log.warn("⚠️ Telematics Ingestion: Unregistered device IMEI={}", imei);
             return true; 
         }
