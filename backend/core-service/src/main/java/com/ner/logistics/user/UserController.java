@@ -1,7 +1,6 @@
 package com.ner.logistics.user;
 
 import com.ner.logistics.audit.AuditService;
-import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +23,37 @@ public class UserController {
     @PreAuthorize("hasAuthority('USER_VIEW') or hasAuthority('USER_MANAGE')")
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userRepository.findAll());
+    }
+
+    @PutMapping("/{id}/role")
+    @PreAuthorize("hasAuthority('ROLE_MANAGE')")
+    public ResponseEntity<?> updateUserRole(@PathVariable Long id,
+                                            @RequestBody UserRoleChangeDto dto,
+                                            @AuthenticationPrincipal User actor) {
+        if (dto.getJustificationReason() == null || dto.getJustificationReason().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Mandatory justification reason is required for role modification."));
+        }
+
+        return userRepository.findById(id).map(user -> {
+            String oldRole = user.getRole().name();
+            user.setRole(dto.getNewRole());
+            userRepository.save(user);
+
+            auditService.logDetailedEvent(
+                    actor != null ? actor.getUsername() : "ADMIN",
+                    actor != null ? actor.getRole().name() : "ADMIN",
+                    "USER_ROLE_CHANGED",
+                    "User",
+                    user.getId().toString(),
+                    oldRole,
+                    dto.getNewRole().name(),
+                    dto.getJustificationReason(),
+                    null,
+                    "SUCCESS"
+            );
+
+            return ResponseEntity.ok(user);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}/suspend")
@@ -121,6 +151,12 @@ public class UserController {
 
     @Data
     public static class UserStatusChangeDto {
+        private String justificationReason;
+    }
+
+    @Data
+    public static class UserRoleChangeDto {
+        private UserRole newRole;
         private String justificationReason;
     }
 }
