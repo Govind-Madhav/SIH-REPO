@@ -29,12 +29,13 @@ public class IncidentController {
     }
 
     @PostMapping("/{id}/evidence")
-    @PreAuthorize("hasAuthority('INCIDENT_REPORT') or hasAuthority('INCIDENT_VERIFY')")
+    @PreAuthorize("hasAuthority('INCIDENT_REPORT') or hasAuthority('INCIDENT_FIELD_CONFIRM') or hasAuthority('INCIDENT_VERIFY')")
     public ResponseEntity<?> uploadIncidentEvidence(
             @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
 
-        ResponseEntity<?> fileResp = fileUploadController.uploadFile(file);
+        ResponseEntity<?> fileResp = fileUploadController.uploadFile(file, authentication);
         if (!fileResp.getStatusCode().is2xxSuccessful()) {
             return fileResp;
         }

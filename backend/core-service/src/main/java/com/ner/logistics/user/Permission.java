@@ -29,6 +29,7 @@ public enum Permission {
     ALERT_POLICY_MANAGE,
     NOTIFICATION_TEMPLATE_MANAGE,
     LANGUAGE_CONFIGURATION_MANAGE,
+    SENSOR_ALERT_VIEW,
 
     // External Integration & Health
     INTEGRATION_MANAGE,
@@ -72,8 +73,14 @@ public enum Permission {
     // Incidents & Disaster Reporting
     INCIDENT_VIEW,
     INCIDENT_REPORT,
+    INCIDENT_FIELD_CONFIRM,
     INCIDENT_VERIFY,
     INCIDENT_RESOLVE,
+
+    // Field Task Management
+    FIELD_TASK_VIEW,
+    FIELD_TASK_ACKNOWLEDGE,
+    FIELD_TASK_UPDATE,
 
     // Corridor & Road Accessibility
     ROAD_STATUS_VIEW,

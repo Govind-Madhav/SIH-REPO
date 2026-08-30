@@ -16,5 +16,7 @@ public class FileUploadResponseDto {
     private String fileName;
     private String fileType;
     private long sizeBytes;
+    private String sha256Hash;
+    private String uploadedBy;
     private LocalDateTime uploadedAt;
 }

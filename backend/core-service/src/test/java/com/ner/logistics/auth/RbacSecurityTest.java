@@ -45,10 +45,11 @@ public class RbacSecurityTest {
     void testFieldOfficerPermissions() {
         UserRole role = UserRole.FIELD_OFFICER;
         assertTrue(role.getPermissions().contains(Permission.INCIDENT_REPORT));
-        assertTrue(role.getPermissions().contains(Permission.INCIDENT_VERIFY));
+        assertTrue(role.getPermissions().contains(Permission.INCIDENT_FIELD_CONFIRM));
         assertTrue(role.getPermissions().contains(Permission.ROAD_STATUS_UPDATE));
 
-        // Field Officer must NOT approve strategic routes or dispatch SOS
+        // Field Officer must NOT have command-level INCIDENT_VERIFY, ROUTE_APPROVE, or SOS_DISPATCH
+        assertFalse(role.getPermissions().contains(Permission.INCIDENT_VERIFY));
         assertFalse(role.getPermissions().contains(Permission.ROUTE_APPROVE));
         assertFalse(role.getPermissions().contains(Permission.SOS_DISPATCH));
     }

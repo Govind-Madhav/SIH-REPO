@@ -36,6 +36,11 @@ public class IncidentService {
 
     @Transactional
     public Incident createIncident(CreateIncidentDto dto, String username) {
+        // Step 5: Geospatial NER Boundary Validation
+        if (dto.getLatitude() < 20.0 || dto.getLatitude() > 30.0 || dto.getLongitude() < 87.0 || dto.getLongitude() > 98.0) {
+            throw new IllegalArgumentException("Geospatial Violation: Coordinates (" + dto.getLatitude() + ", " + dto.getLongitude() + ") are outside North Eastern Region (NER) operational boundary.");
+        }
+
         Point spatialPoint = geometryFactory.createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude()));
         spatialPoint.setSRID(4326);
 
@@ -64,7 +69,7 @@ public class IncidentService {
                 .longitude(dto.getLongitude())
                 .districtName(districtName)
                 .reportedBy(username != null ? username : "FIELD_OFFICER")
-                .verificationStatus(severityResult.confidenceLevel() >= 75.0 ? "VERIFIED" : "UNDER_VERIFICATION")
+                .verificationStatus("FIELD_CONFIRMED") // Initial Field Confirmation
                 .photoUrlsJson(photoJson)
                 .status("ACTIVE")
                 .createdAt(LocalDateTime.now())
@@ -95,6 +100,7 @@ public class IncidentService {
         currentPhotos.add(fileUrl);
         try {
             incident.setPhotoUrlsJson(objectMapper.writeValueAsString(currentPhotos));
+            incident.setSyncStatus("FULLY_SYNCED");
             incidentRepository.save(incident);
             log.info("📸 Attached photo evidence URL {} to Incident #{}", fileUrl, incidentId);
         } catch (JsonProcessingException e) {
@@ -108,7 +114,6 @@ public class IncidentService {
         List<Incident> syncedList = new ArrayList<>();
 
         for (CreateIncidentDto dto : dtos) {
-            // Idempotency check: if clientGeneratedId is present and already saved, return existing
             if (dto.getClientGeneratedId() != null && !dto.getClientGeneratedId().isBlank()) {
                 var existingOpt = incidentRepository.findByClientGeneratedId(dto.getClientGeneratedId());
                 if (existingOpt.isPresent()) {
@@ -121,19 +126,17 @@ public class IncidentService {
             Incident created = createIncident(dto, username);
             created.setClientGeneratedId(dto.getClientGeneratedId());
             created.setCreatedOfflineAt(dto.getCreatedOfflineAt() != null ? dto.getCreatedOfflineAt() : LocalDateTime.now());
-            created.setSyncStatus("SYNCED");
+            created.setSyncStatus(dto.getPhotoUrls() != null && !dto.getPhotoUrls().isEmpty() ? "FULLY_SYNCED" : "EVIDENCE_PENDING");
             syncedList.add(incidentRepository.save(created));
         }
 
         return syncedList;
     }
 
-
     public IncidentImpactSummaryDto analyzeImpact(Long incidentId) {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new RuntimeException("Incident not found: " + incidentId));
 
-        // 1. PostGIS Spatial Search for Nearby Vehicles (Within 10 km)
         List<VehicleLocation> nearbyLocations = vehicleLocationRepository.findNearbyVehicles(
                 incident.getLatitude(),
                 incident.getLongitude(),
@@ -145,12 +148,10 @@ public class IncidentService {
                 .distinct()
                 .collect(Collectors.toList());
 
-        // Default to active convoy vehicles if database is fresh
-        if (affectedVehicleCodes.isEmpty() && incident.getSeverityScore() >= 60) {
+        if (affectedVehicleCodes.isEmpty() && incident.getSeverityScore() != null && incident.getSeverityScore() >= 60) {
             affectedVehicleCodes = List.of("NER-07", "NER-01");
         }
 
-        // 2. Identify Affected Commodities from Essential Shipments
         List<Shipment> affectedShipments = shipmentRepository.findByVehicleCodeIn(
                 affectedVehicleCodes.isEmpty() ? Collections.emptyList() : affectedVehicleCodes
         );
@@ -203,7 +204,6 @@ public class IncidentService {
 
         Incident updatedIncident = incidentRepository.save(incident);
 
-        // Broadcast updated status
         IncidentImpactSummaryDto impactSummary = analyzeImpact(updatedIncident.getId());
         messagingTemplate.convertAndSend("/topic/incident-events", impactSummary);
 

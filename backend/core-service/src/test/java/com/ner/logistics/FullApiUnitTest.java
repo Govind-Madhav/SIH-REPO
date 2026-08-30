@@ -23,6 +23,8 @@ import com.ner.logistics.shipment.Shipment;
 import com.ner.logistics.shipment.ShipmentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -167,9 +169,9 @@ public class FullApiUnitTest {
 
         MockMultipartFile file = new MockMultipartFile("file", "debris.jpg", "image/jpeg", "fake image data".getBytes());
         FileUploadResponseDto uploadDto = FileUploadResponseDto.builder().fileUrl("/uploads/evidence/debris.jpg").build();
-        doReturn(ResponseEntity.ok(uploadDto)).when(fileUploadController).uploadFile(file);
+        doReturn(ResponseEntity.ok(uploadDto)).when(fileUploadController).uploadFile(eq(file), any());
 
-        ResponseEntity<?> fileResp = incidentController.uploadIncidentEvidence(100L, file);
+        ResponseEntity<?> fileResp = incidentController.uploadIncidentEvidence(100L, file, null);
         assertEquals(HttpStatus.OK, fileResp.getStatusCode());
     }
 

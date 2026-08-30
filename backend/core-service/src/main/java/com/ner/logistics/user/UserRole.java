@@ -50,7 +50,11 @@ public enum UserRole {
     FIELD_OFFICER(EnumSet.of(
             Permission.INCIDENT_VIEW,
             Permission.INCIDENT_REPORT,
-            Permission.INCIDENT_VERIFY,
+            Permission.INCIDENT_FIELD_CONFIRM,
+            Permission.FIELD_TASK_VIEW,
+            Permission.FIELD_TASK_ACKNOWLEDGE,
+            Permission.FIELD_TASK_UPDATE,
+            Permission.SENSOR_ALERT_VIEW,
             Permission.ROAD_STATUS_VIEW,
             Permission.ROAD_STATUS_UPDATE,
             Permission.ROUTE_VIEW,
