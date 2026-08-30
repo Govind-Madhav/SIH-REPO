@@ -3,6 +3,7 @@ package com.ner.logistics.sos;
 import jakarta.persistence.*;
 import lombok.*;
 import org.locationtech.jts.geom.Point;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,6 +18,8 @@ public class SosEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String meshPacketId; // Unique offline P2P mesh identifier
 
     @Column(nullable = false)
     private String triggeredBy; // Driver / Officer username
@@ -35,6 +38,17 @@ public class SosEvent {
     private String message;
 
     private String status; // ACTIVE, DISPATCHED, RESOLVED
+
+    @Builder.Default
+    private String deliveryType = "DIRECT_CELLULAR"; // DIRECT_CELLULAR, MESH_RELAY_STORE_FORWARD
+
+    private String relayedByVehicle; // Vehicle B code (e.g. NER-02)
+
+    private Integer relayHopCount;
+
+    private Long relayLatencyMinutes; // Latency between offline trigger and network flush
+
+    private LocalDateTime originTimestamp;
 
     private LocalDateTime createdAt;
 }

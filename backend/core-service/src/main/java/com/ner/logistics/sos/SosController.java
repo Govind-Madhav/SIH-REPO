@@ -21,6 +21,11 @@ public class SosController {
         return ResponseEntity.ok(sosService.triggerSos(dto, username));
     }
 
+    @PostMapping("/relay")
+    public ResponseEntity<SosEvent> processRelayedSos(@Valid @RequestBody SosRelayRequestDto dto) {
+        return ResponseEntity.ok(sosService.processRelayedSos(dto));
+    }
+
     @GetMapping("/active")
     public ResponseEntity<List<SosEvent>> getActiveSosEvents() {
         return ResponseEntity.ok(sosService.getActiveSosEvents());
