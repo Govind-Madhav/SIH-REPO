@@ -34,7 +34,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/health", "/ws/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/health",
+                                "/ws/**",
+                                "/api/sos/relay",
+                                "/api/sos/acks",
+                                "/api/tracking/telematics/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
