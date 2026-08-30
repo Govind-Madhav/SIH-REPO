@@ -12,20 +12,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationDto {
-
     private Long id;
-
-    private String priority; // LOW, HIGH, CRITICAL
-
+    private String priority;
     private String title;
-
     private String message;
-
-    @Builder.Default
-    private String languageCode = "en"; // en, hi
-
-    private List<String> targetRecipients; // Dashboard, Logistics Operator, Driver, Admin, Emergency Authorities
-
+    private String languageCode;
+    private List<String> targetRecipients;
     private String timestamp;
 }
-

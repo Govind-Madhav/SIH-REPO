@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LanguageDto {
-    private String code; // en, hi, as, bn
-    private String name; // English, Hindi, Assamese, Bengali
-    private String nativeName; // English, हिन्दी, অসমীয়া, বাংলা
-    private Boolean defaultLanguage;
+    private String code;
+    private String name;
+    private String nativeName;
+    private boolean defaultLanguage;
 }
