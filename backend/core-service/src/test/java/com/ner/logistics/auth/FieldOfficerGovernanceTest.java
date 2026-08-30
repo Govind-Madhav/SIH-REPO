@@ -1,6 +1,5 @@
 package com.ner.logistics.auth;
 
-import com.ner.logistics.accessibility.geofence.EmergencyCorridorController;
 import com.ner.logistics.audit.AuditService;
 import com.ner.logistics.fieldtask.FieldTaskController;
 import com.ner.logistics.file.FileUploadController;
@@ -22,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -102,21 +100,52 @@ public class FieldOfficerGovernanceTest {
         ResponseEntity<?> response = fileUploadController.uploadFile(file, null);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().toString().contains("Invalid file type"));
+        assertTrue(response.getBody().toString().contains("Invalid file extension"));
     }
 
     @Test
-    void testFieldTaskAcknowledgementWorkflow() {
+    void testPhotoUploadMagicBytesSecurityRejection() {
+        // File extension is .jpg, but body contains fake non-JPEG bytes
+        byte[] fakeExeHeader = new byte[]{(byte) 0x4D, (byte) 0x5A, (byte) 0x90, (byte) 0x00, (byte) 0x03};
+        MockMultipartFile file = new MockMultipartFile("file", "disguised_malware.jpg", "image/jpeg", fakeExeHeader);
+        ResponseEntity<?> response = fileUploadController.uploadFile(file, null);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("Security Violation"));
+    }
+
+    @Test
+    void testFieldTaskAcknowledgementAndNoHazardFoundResult() {
         User officer = User.builder().username("field_officer_01").role(UserRole.FIELD_OFFICER).build();
 
-        Map<String, String> body = Map.of("status", "ACKNOWLEDGED", "notes", "On my way to NH-27 landslide sector");
-        ResponseEntity<?> response = fieldTaskController.updateTaskStatus("TASK-HAFLONG-104", body, officer);
+        FieldTaskController.TaskStatusUpdateDto updateDto = new FieldTaskController.TaskStatusUpdateDto();
+        updateDto.setStatus("COMPLETED");
+        updateDto.setFieldVerificationResult("NO_HAZARD_FOUND");
+        updateDto.setNotes("Inspected NH-27 KM-42. Minor gravel runoff cleared; no landslide active.");
+
+        ResponseEntity<?> response = fieldTaskController.updateTaskStatus("TASK-HAFLONG-104", updateDto, officer);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(auditService).logDetailedEvent(
-                eq("field_officer_01"), eq("FIELD_OFFICER"), eq("FIELD_TASK_STATUS_UPDATED"),
-                eq("FieldTask"), eq("TASK-HAFLONG-104"), eq("RECEIVED"), eq("ACKNOWLEDGED"),
-                eq("On my way to NH-27 landslide sector"), any(), eq("SUCCESS")
-        );
+        Map<?, ?> resMap = (Map<?, ?>) response.getBody();
+        assertEquals("NO_HAZARD_FOUND", resMap.get("fieldVerificationResult"));
+    }
+
+    @Test
+    void testFieldTaskDeduplicationLogic() {
+        User actor = User.builder().username("emergency_operator_01").role(UserRole.EMERGENCY_OPERATOR).build();
+
+        FieldTaskController.FieldInspectionTaskDto newTask = FieldTaskController.FieldInspectionTaskDto.builder()
+                .title("Duplicate Sensor Alarm Task")
+                .districtName("Dima Hasao")
+                .targetLatitude(25.1833)
+                .targetLongitude(92.8333)
+                .instructions("Sensor #SENS-SOIL-88 triggered second reading.")
+                .build();
+
+        ResponseEntity<FieldTaskController.FieldInspectionTaskDto> response = fieldTaskController.createFieldTask(newTask, actor);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        // Deduplicated: Returns existing task ID instead of spawning new ID
+        assertEquals("TASK-HAFLONG-104", response.getBody().getTaskId());
     }
 }

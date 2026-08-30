@@ -34,6 +34,20 @@ public class SosController {
         return ResponseEntity.ok(sosService.getActiveSosEvents());
     }
 
+    @GetMapping("/nearby")
+    @PreAuthorize("hasAuthority('SOS_VIEW')")
+    public ResponseEntity<List<SosEvent>> getNearbySosEvents(
+            @RequestParam double lat,
+            @RequestParam double lng,
+            @RequestParam(defaultValue = "25.0") double radiusKm) {
+        // Location-Scoped SOS Awareness: Backend filters SOS events within radiusKm (default 25km)
+        List<SosEvent> nearby = sosService.getActiveSosEvents().stream()
+                .filter(s -> s.getLatitude() != null && s.getLongitude() != null)
+                .filter(s -> calculateDistanceKm(lat, lng, s.getLatitude(), s.getLongitude()) <= radiusKm)
+                .toList();
+        return ResponseEntity.ok(nearby);
+    }
+
     @GetMapping("/acks")
     public ResponseEntity<List<SosAck>> getActiveAcks() {
         return ResponseEntity.ok(sosService.getActiveAcks());
@@ -62,5 +76,13 @@ public class SosController {
     @PreAuthorize("hasAuthority('SOS_RESOLVE')")
     public ResponseEntity<SosEvent> resolveSos(@PathVariable Long id, @RequestParam(required = false) String resolutionNotes) {
         return ResponseEntity.ok(sosService.resolveSos(id, resolutionNotes));
+    }
+
+    private double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+        double p = 0.017453292519943295; // Math.PI / 180
+        double a = 0.5 - Math.cos((lat2 - lat1) * p)/2 +
+                Math.cos(lat1 * p) * Math.cos(lat2 * p) *
+                        (1 - Math.cos((lon2 - lon1) * p))/2;
+        return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
     }
 }

@@ -45,6 +45,9 @@ public class SensorController {
                         .longitude(lng)
                         .moisturePercentage(94.2)
                         .tiltDegrees(14.8)
+                        .healthStatus("HEALTHY") // HEALTHY, STALE, OFFLINE, UNRELIABLE
+                        .batteryPct(92.0)
+                        .lastPingSecondsAgo(15)
                         .alertLevel("CRITICAL_LANDSLIDE_RISK")
                         .recommendedAction("Dispatch Field Officer immediately for physical verification")
                         .triggeredAt(LocalDateTime.now().minusMinutes(12).toString())
@@ -66,6 +69,9 @@ public class SensorController {
         private double longitude;
         private double moisturePercentage;
         private double tiltDegrees;
+        private String healthStatus;    // HEALTHY, STALE, OFFLINE, UNRELIABLE
+        private double batteryPct;
+        private long lastPingSecondsAgo;
         private String alertLevel;
         private String recommendedAction;
         private String triggeredAt;

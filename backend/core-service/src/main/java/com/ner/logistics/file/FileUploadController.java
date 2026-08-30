@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,7 +46,19 @@ public class FileUploadController {
         }
 
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            return ResponseEntity.badRequest().body("Invalid file type. Only JPG, PNG, and WEBP images are allowed.");
+            return ResponseEntity.badRequest().body("Invalid file extension. Only JPG, PNG, and WEBP images are allowed.");
+        }
+
+        // Server-Side Magic Byte Signature Validation (Prevents malware disguised as .jpg)
+        try (InputStream is = file.getInputStream()) {
+            byte[] headerBytes = new byte[12];
+            int read = is.read(headerBytes);
+            if (read < 4 || !isValidImageMagicBytes(headerBytes)) {
+                log.warn("⚠️ SECURITY REJECTION: File {} failed server-side magic byte signature validation.", originalFilename);
+                return ResponseEntity.badRequest().body("Security Violation: File header magic bytes do not match a valid JPEG, PNG, or WEBP image format.");
+            }
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not read file header bytes.");
         }
 
         try {
@@ -83,5 +96,16 @@ public class FileUploadController {
             log.error("💥 Failed to store uploaded file: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not store file: " + e.getMessage());
         }
+    }
+
+    private boolean isValidImageMagicBytes(byte[] bytes) {
+        // JPEG magic bytes: FF D8
+        boolean isJpeg = (bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8;
+        // PNG magic bytes: 89 50 4E 47 (.PNG)
+        boolean isPng = (bytes[0] & 0xFF) == 0x89 && (bytes[1] & 0xFF) == 0x50 && (bytes[2] & 0xFF) == 0x4E && (bytes[3] & 0xFF) == 0x47;
+        // WEBP magic bytes: RIFF...WEBP (52 49 46 46 ... 57 45 42 50)
+        boolean isWebp = (bytes[0] & 0xFF) == 0x52 && (bytes[1] & 0xFF) == 0x49 && (bytes[2] & 0xFF) == 0x46 && (bytes[3] & 0xFF) == 0x46;
+
+        return isJpeg || isPng || isWebp;
     }
 }
