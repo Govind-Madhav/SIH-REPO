@@ -40,7 +40,8 @@ public class SecurityConfig {
                                 "/ws/**",
                                 "/api/sos/relay",
                                 "/api/sos/acks",
-                                "/api/tracking/telematics/**"
+                                "/api/tracking/telematics/**",
+                                "/api/i18n/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

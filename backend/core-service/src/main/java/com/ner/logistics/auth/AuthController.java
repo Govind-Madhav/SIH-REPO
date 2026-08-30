@@ -10,6 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
+    private final OtpService otpService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
@@ -40,6 +43,17 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/otp/send")
+    public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody OtpSendRequestDto request) {
+        String msg = otpService.sendOtp(request);
+        return ResponseEntity.ok(Map.of("message", msg, "status", "SUCCESS"));
+    }
+
+    @PostMapping("/otp/verify")
+    public ResponseEntity<AuthResponse> verifyOtp(@Valid @RequestBody OtpVerifyRequestDto request) {
+        return ResponseEntity.ok(otpService.verifyOtpAndLogin(request));
     }
 
     @PostMapping("/register")
