@@ -11,14 +11,21 @@ public enum UserRole {
             Permission.VEHICLE_MANAGE,
             Permission.SHIPMENT_VIEW,
             Permission.SHIPMENT_MANAGE,
+            Permission.DELIVERY_CONFIRM,
+            Permission.DELIVERY_PROOF_VIEW,
+            Permission.SUPPLY_GAP_VIEW,
             Permission.INCIDENT_VIEW,
             Permission.ROAD_STATUS_VIEW,
+            Permission.RISK_CORRIDOR_VIEW,
             Permission.ROUTE_VIEW,
             Permission.ROUTE_APPROVE,
+            Permission.DECISION_VIEW,
+            Permission.DECISION_APPROVE,
+            Permission.ALERT_VIEW,
+            Permission.ALERT_ACKNOWLEDGE,
             Permission.ANALYTICS_VIEW,
             Permission.REPORT_EXPORT,
-            Permission.INTEGRATION_HEALTH_VIEW,
-            Permission.RISK_CORRIDOR_MANAGE
+            Permission.INTEGRATION_HEALTH_VIEW
     )),
 
     EMERGENCY_OPERATOR(EnumSet.of(
@@ -33,6 +40,8 @@ public enum UserRole {
             Permission.SOS_RESOLVE,
             Permission.EMERGENCY_RESOURCE_MANAGE,
             Permission.ROUTE_VIEW,
+            Permission.ALERT_VIEW,
+            Permission.ALERT_ACKNOWLEDGE,
             Permission.ANALYTICS_VIEW
     )),
 
@@ -43,7 +52,8 @@ public enum UserRole {
             Permission.ROAD_STATUS_VIEW,
             Permission.ROAD_STATUS_UPDATE,
             Permission.ROUTE_VIEW,
-            Permission.SOS_VIEW
+            Permission.SOS_VIEW,
+            Permission.ALERT_VIEW
     )),
 
     DRIVER(EnumSet.of(
@@ -52,7 +62,8 @@ public enum UserRole {
             Permission.ROUTE_VIEW,
             Permission.SOS_TRIGGER,
             Permission.SOS_VIEW_SELF,
-            Permission.DELIVERY_STATUS_UPDATE
+            Permission.DELIVERY_STATUS_UPDATE,
+            Permission.ALERT_VIEW
     ));
 
     private final Set<Permission> permissions;

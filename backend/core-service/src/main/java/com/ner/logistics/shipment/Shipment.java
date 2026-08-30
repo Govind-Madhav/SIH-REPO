@@ -2,6 +2,7 @@ package com.ner.logistics.shipment;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "shipments")
@@ -22,7 +23,7 @@ public class Shipment {
     private String assignedDriverUsername;
 
     @Column(nullable = false)
-    private String commodityType; // MEDICINE, OXYGEN, FOOD, FUEL, RELIEF_GOODS
+    private String commodityType; // MEDICINE, OXYGEN_CYLINDERS, BABY_FOOD, FUEL, FOOD, AGRICULTURAL_PRODUCE, CONSTRUCTION_MATERIAL
 
     @Column(nullable = false)
     private String priority; // NORMAL, HIGH, CRITICAL
@@ -31,5 +32,13 @@ public class Shipment {
 
     private String destination;
 
-    private String status; // IN_TRANSIT, DELIVERED, DELAYED, AT_RISK
+    private String status; // PLANNED, ASSIGNED, IN_TRANSIT, DELAYED, DELIVERED, CANCELLED, ON_HOLD
+
+    private String receiverOtp;
+
+    private String proofPhotoUrl;
+
+    private String deliveryConfirmedByOperator;
+
+    private LocalDateTime deliveryConfirmedAt;
 }

@@ -23,7 +23,9 @@ public enum Permission {
     MODEL_ROLLBACK,
     MODEL_PERFORMANCE_VIEW,
 
-    // Alert Policy & Multilingual Templates
+    // Alert Policy & Operational Alerts
+    ALERT_VIEW,
+    ALERT_ACKNOWLEDGE,
     ALERT_POLICY_MANAGE,
     NOTIFICATION_TEMPLATE_MANAGE,
     LANGUAGE_CONFIGURATION_MANAGE,
@@ -42,6 +44,7 @@ public enum Permission {
     // Geofencing & Corridor Intelligence
     GEOFENCE_MANAGE,
     RISK_CORRIDOR_MANAGE,
+    RISK_CORRIDOR_VIEW,
 
     // Emergency Resource Management
     EMERGENCY_RESOURCE_MANAGE,
@@ -60,6 +63,9 @@ public enum Permission {
     SHIPMENT_VIEW,
     SHIPMENT_MANAGE,
     SHIPMENT_VIEW_SELF,
+    DELIVERY_CONFIRM,
+    DELIVERY_PROOF_VIEW,
+    SUPPLY_GAP_VIEW,
 
     // Incidents & Disaster Reporting
     INCIDENT_VIEW,
@@ -83,6 +89,8 @@ public enum Permission {
     ROUTE_VIEW,
     ROUTE_APPROVE,
     DELIVERY_STATUS_UPDATE,
+    DECISION_VIEW,
+    DECISION_APPROVE,
 
     // Analytics & Governance Reporting
     ANALYTICS_VIEW,
